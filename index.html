@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Заголовок вкладки -->
 <title>MVB</title>
-<!-- Favicon -->
 <link rel="icon" href="https://external-content.duckduckgo.com/ip3/www.mvbnet.de.ico" type="image/x-icon">
 
 <style>
 :root{
-  /* Светлая тема по умолчанию с зеленоватым оттенком */
   --bg:#e8f0ec;
   --fg:#333;
   --surface:#fff;
@@ -19,16 +16,12 @@
   --accent:#008060;
   --sh1:rgba(144, 238, 144, .25);
   --sh2:rgba(144, 238, 144, .08);
-  /* Светлый фон для логотипа в светлой теме */
   --logo-container-bg: rgba(255, 255, 255, 0.7);
-  /* Цвет фона для контейнера QR на странице в светлой теме */
   --qr-container-bg: var(--subtle);
-  /* Цвета для ссылок в деталях */
   --link-color: var(--accent);
-  --link-hover-color: #005a44; /* Темнее основного акцента */
+  --link-hover-color: #005a44;
 }
 @media (prefers-color-scheme: dark){
-  /* Темная тема */
   :root{
     --bg:#0a1e16;
     --fg:#e6e6e6;
@@ -38,16 +31,12 @@
     --accent:#00e6a8;
     --sh1:rgba(0, 230, 168, .08);
     --sh2:rgba(0, 230, 168, .03);
-    /* Тёмный фон для логотипа в тёмной теме для лучшей контрастности */
     --logo-container-bg: rgba(0, 0, 0, 0.3);
-    /* Цвет фона для контейнера QR на странице в тёмной теме */
     --qr-container-bg: var(--subtle);
-    /* Цвета для ссылок в деталях в тёмной теме */
     --link-color: var(--accent);
-    --link-hover-color: #4dffce; /* Светлее основного акцента */
+    --link-hover-color: #4dffce;
   }
 }
-
 body{
   margin:0;
   min-height:100vh;
@@ -66,7 +55,6 @@ body{
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-
 .ticket-container{
   width:100%;
   max-width:400px;
@@ -78,23 +66,19 @@ body{
   box-sizing:border-box;
   position:relative;
 }
-
-/* Контейнер для логотипа с улучшенным фоном */
 .logo-header-container {
   text-align:center;
   margin-bottom:20px;
-  padding: 15px; /* Увеличенный padding */
-  border-radius: 15px; /* Скругление фона логотипа */
-  background-color: rgb(229 229 229); /* Улучшенный фон для контейнера */
+  padding: 15px;
+  border-radius: 15px;
+  background-color: rgb(229 229 229);
 }
 .logo-header{
-  /* Стили для самого изображения логотипа */
   width:160px;
   height:auto;
   display: block;
   margin: 0 auto;
 }
-
 .qr-btn{
   display:block;
   width:100%;
@@ -107,30 +91,26 @@ body{
   color:var(--fg);
   margin-bottom:20px;
 }
-
-/* QR-код на странице - изображение */
 .page-qr {
   text-align: center;
   margin-bottom: 20px;
-  /* Добавляем фон контейнеру QR для лучшей визуальной отделки */
   background-color: var(--qr-container-bg);
   padding: 10px;
   border-radius: 12px;
 }
 .page-qr-image{
-  width:220px; /* Размер как в первом примере */
+  width:220px;
   height:220px;
   border-radius:10px;
   margin:0 auto;
   display: block;
-  cursor: pointer; /* Показываем, что можно кликнуть */
-  object-fit: contain; /* Сохраняем пропорции изображения */
-  transition: transform 0.2s ease; /* Плавное увеличение при наведении (опционально) */
+  cursor: pointer;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 .page-qr-image:hover {
-    transform: scale(1.02); /* Немного увеличиваем при наведении */
+    transform: scale(1.02);
 }
-
 .fullscreen-qr{
   position:fixed;
   inset:0;
@@ -159,11 +139,10 @@ body{
   height:70vmin;
   border-radius:12px;
   display: block;
-  background-color: var(--qr-container-bg); /* Фон для полноэкранного QR */
+  background-color: var(--qr-container-bg);
   object-fit: contain;
-  padding: 10px; /* Немного отступа внутри */
+  padding: 10px;
 }
-
 .info-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -182,8 +161,6 @@ body{
   font-size:.9rem;
   font-weight:600;
 }
-
-/* Циклическая анимация иконок транспорта */
 .transport-strip{
   display:flex;
   align-items:center;
@@ -209,7 +186,6 @@ body{
   width:28px;
   height:28px;
   margin-bottom: 4px;
-  /* filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(30%) contrast(90%); */ /* Для темной темы */
 }
 .transport-item span {
     font-size: 0.7rem;
@@ -218,7 +194,6 @@ body{
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .details-section {
     margin-bottom: 20px;
     border-top: 1px dashed var(--border);
@@ -250,9 +225,8 @@ body{
     transition: max-height 0.3s ease;
 }
 .details-content.expanded {
-    max-height: 1000px; /* Увеличил высоту для размещения ссылок */
+    max-height: 1000px;
 }
-/* Градиент для частичного скрытия текста */
 .details-content::after {
     content: '';
     position: absolute;
@@ -267,8 +241,6 @@ body{
 .details-content.expanded::after {
     opacity: 0;
 }
-
-/* Ссылки в деталях */
 .details-links {
     margin-top: 10px;
     display: flex;
@@ -292,9 +264,8 @@ body{
 .details-link svg {
     width: 16px;
     height: 16px;
-    fill: currentColor; /* Цвет иконки совпадает с цветом текста */
+    fill: currentColor;
 }
-
 .footer{
   font-size:.75rem;
   opacity:.7;
@@ -310,20 +281,54 @@ body{
   text-decoration:underline;
 }
 
+/* --- NEUE STILE FÜR LIVE-STATUS --- */
+.live-status-container {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: var(--subtle);
+}
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    font-family: monospace;
+}
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    width: 100%;
+    background-color: var(--accent);
+    border-radius: 3px;
+    animation: progress-countdown 60s linear infinite;
+}
+@keyframes progress-countdown {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+/* --- ENDE DER NEUEN STILE --- */
+
 </style>
 </head>
 
 <body>
 <div class="ticket-container">
 
-  <!-- Контейнер для логотипа с улучшенным фоном -->
   <div class="logo-header-container">
     <img src="https://i.ibb.co/dskhJnVv/image.png" alt="Deutschland-Ticket Logo" class="logo-header">
   </div>
 
-  <!-- QR-код на странице - изображение -->
   <div class="page-qr">
-    <img src="https://i.ibb.co/HT919Y3D/photo-2025-08-14-21-12-15.jpg" alt="QR-Code" class="page-qr-image" id="pageQR">
+    <img src="https://abo-services.online/images/a631ccf3-a97c-4a0c-8617-a878451f3eab.jpg" alt="QR-Code" class="page-qr-image" id="pageQR">
   </div>
 
   <button class="qr-btn" onclick="toggleQR()">QR-Code auf Vollbild anzeigen</button>
@@ -349,16 +354,11 @@ body{
       <span class="label">Geltungsbereich</span>
       <span class="value">Deutschlandweit</span>
     </div>
-    <div class="info-item">
-      <span class="label">Ticket-Nr.</span>
-      <span class="value">391677</span>
-    </div>
   </div>
 
   <div class="transport-strip">
     <div class="transport-strip-inner" id="transportStrip">
-      <!-- Иконки будут дублированы в JS -->
-    </div>
+      </div>
   </div>
 
   <div class="details-section">
@@ -372,14 +372,20 @@ body{
       Es gelten die Beförderungsbedingungen der anerkennenden Verkehrsunternehmen und -verbünde sowie die Tarifbestimmungen des Deutschlandtickets.<br>
       <strong>Nicht übertragbar.</strong><br>
       Umtausch und Erstattung ausgeschlossen.<br>
-      Kontrollmedium: gültiger amtlicher Lichtbildausweis.<br>
-      <br>
-      #24.07.2025 04:43 #4092#
+      Kontrollmedium: gültiger amtlicher Lichtbildausweis.
       
-      <!-- Ссылки в деталях -->
+      <div class="live-status-container">
+        <div class="status-header">
+          <span id="live-time"></span>
+          <span id="countdown-text"></span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      
       <div class="details-links">
         <a href="https://mvb-verkehrsmelder.de/" target="_blank" rel="noopener noreferrer" class="details-link">
-          <!-- Иконка для сайта (можно заменить на любую другую) -->
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
           Verkehrsmelder
         </a>
@@ -392,17 +398,14 @@ body{
           D-Ticket Info
         </a>
         <a href="https://www.facebook.com/mvbgmbh" target="_blank" rel="noopener noreferrer" class="details-link">
-          <!-- Иконка Facebook -->
           <svg viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12z"/></svg>
           Facebook
         </a>
         <a href="https://www.instagram.com/magdeburgerverkehrsbetriebe/" target="_blank" rel="noopener noreferrer" class="details-link">
-          <!-- Иконка Instagram -->
           <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
           Instagram
         </a>
         <a href="https://www.youtube.com/channel/UCmPLynuKFEBAk7IkfuQ0Upw" target="_blank" rel="noopener noreferrer" class="details-link">
-          <!-- Иконка YouTube -->
           <svg viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
           YouTube
         </a>
@@ -417,24 +420,11 @@ body{
 </div>
 
 <script>
-// Данные для иконок транспорта с изображениями
 const transportItems = [
-  { 
-    src: 'https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png',
-    label: 'Tram' 
-  },
-  { 
-    src: 'https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png',
-    label: 'Bus' 
-  },
-  { 
-    src: 'https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg',
-    label: 'Zug' 
-  },
-  { 
-    src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png',
-    label: 'U-Bahn' 
-  }
+  { src: 'https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png', label: 'Tram' },
+  { src: 'https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png', label: 'Bus' },
+  { src: 'https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg', label: 'Zug' },
+  { src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
 ];
 
 const qrHtml = `
@@ -444,24 +434,19 @@ const qrHtml = `
 </div>`;
 document.body.insertAdjacentHTML('beforeend', qrHtml);
 
-// Инициализация иконок транспорта
 function initTransportStrip() {
     const stripInner = document.getElementById('transportStrip');
+    if (!stripInner) return;
     stripInner.innerHTML = '';
-
-    // Создаем и добавляем иконки дважды для эффекта бесконечности
     for (let i = 0; i < 2; i++) {
         transportItems.forEach(item => {
             const transportItem = document.createElement('div');
             transportItem.className = 'transport-item';
-            // Создаем элемент img
             const img = document.createElement('img');
             img.src = item.src;
             img.alt = item.label;
-            // Создаем элемент span для подписи
             const span = document.createElement('span');
             span.textContent = item.label;
-            // Добавляем img и span в контейнер
             transportItem.appendChild(img);
             transportItem.appendChild(span);
             stripInner.appendChild(transportItem);
@@ -469,14 +454,12 @@ function initTransportStrip() {
     }
 }
 
-// Функция для переключения полноэкранного QR-кода
 function toggleQR() {
   const qrElement = document.getElementById('qrFull');
   qrElement.classList.toggle('hidden');
   document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
 }
 
-// Функция для переключения отображения деталей
 function toggleDetails() {
   const detailsContent = document.getElementById('detailsContent');
   const button = document.querySelector('.toggle-details');
@@ -489,13 +472,41 @@ function toggleDetails() {
   }
 }
 
-// Добавляем обработчик клика на основной QR-код
+function initLiveStatus() {
+  const timeElement = document.getElementById('live-time');
+  const countdownElement = document.getElementById('countdown-text');
+  const countdownDuration = 60; // Dauer des Countdowns in Sekunden
+
+  if (!timeElement || !countdownElement) return;
+
+  const dateTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+      timeZone: 'Europe/Berlin',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+  });
+
+  setInterval(() => {
+    const now = new Date();
+    
+    // Zeit für Berlin formatieren und anzeigen
+    const formattedDate = dateTimeFormatter.format(now);
+    timeElement.textContent = `Stand: ${formattedDate}`;
+
+    // Countdown-Text aktualisieren
+    const secondsElapsed = Math.floor(now.getTime() / 1000) % countdownDuration;
+    const secondsRemaining = countdownDuration - secondsElapsed;
+    countdownElement.textContent = `Nächste in ${secondsRemaining}s`;
+
+  }, 1000);
+}
+
+
 document.addEventListener('DOMContentLoaded', (event) => {
   initTransportStrip();
+  initLiveStatus(); // Initialisiert den neuen Live-Status-Block
   
-  // Получаем элемент основного QR-кода
   const pageQRImage = document.getElementById('pageQR');
-  // Добавляем обработчик клика
   if (pageQRImage) {
       pageQRImage.addEventListener('click', toggleQR);
   }
