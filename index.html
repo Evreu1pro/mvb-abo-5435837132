@@ -14,6 +14,7 @@
   --border:#d0d0d0;
   --subtle:#f0f4f2;
   --accent:#008060;
+  --accent-rgb: 0, 128, 96;
   --sh1:rgba(144, 238, 144, .25);
   --sh2:rgba(144, 238, 144, .08);
   --logo-container-bg: rgba(255, 255, 255, 0.7);
@@ -29,6 +30,7 @@
     --border:#333;
     --subtle:#2a2a2a;
     --accent:#00e6a8;
+    --accent-rgb: 0, 230, 168;
     --sh1:rgba(0, 230, 168, .08);
     --sh2:rgba(0, 230, 168, .03);
     --logo-container-bg: rgba(0, 0, 0, 0.3);
@@ -65,6 +67,7 @@ body{
   padding:24px;
   box-sizing:border-box;
   position:relative;
+  overflow: hidden; /* Wichtig für die untere Leiste */
 }
 .logo-header-container {
   text-align:center;
@@ -135,6 +138,7 @@ body{
   background:none;
   color:var(--fg);
   cursor:pointer;
+  z-index: 10;
 }
 .qr-big{
   width:65vmin;
@@ -276,6 +280,7 @@ body{
   text-align:center;
   border-top:1px dashed var(--border);
   padding-top:16px;
+  margin-bottom: 5px; /* Platz für die untere Leiste schaffen */
 }
 .footer a {
   color:var(--accent);
@@ -319,7 +324,6 @@ body{
     to { width: 0%; }
 }
 
-/* --- NEUE STILE FÜR VOLLBILD-QR-ANSICHT --- */
 .fullscreen-header, .fullscreen-footer {
     width: 100%;
     max-width: 500px;
@@ -349,8 +353,52 @@ body{
     font-size: 1.4rem;
     font-weight: 600;
 }
-/* --- ENDE DER NEUEN STILE --- */
 
+/* --- NEUE STILE --- */
+.liveness-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    background-size: 200% 100%;
+    animation: liveness-scan 3s linear infinite;
+}
+@keyframes liveness-scan {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.fs-status-indicator {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    background: var(--subtle);
+    color: var(--fg);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.fs-status-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+/* --- ENDE DER NEUEN STILE --- */
 </style>
 </head>
 
@@ -362,7 +410,7 @@ body{
   </div>
 
   <div class="page-qr">
-    <img src="https://i.ibb.co/HT919Y3D/photo-2025-08-14-21-12-15.jpg" alt="QR-Code" class="page-qr-image" id="pageQR">
+    <img src="https://lh3.google.com/u/0/d/1Vr8SkkCQMeWi0Yvleo-i2uqjjTSUSJSy=w1912-h962-iv1?auditContext=prefetch" alt="QR-Code" class="page-qr-image" id="pageQR">
   </div>
 
   <button class="qr-btn" onclick="toggleQR()">QR-Code auf Vollbild anzeigen</button>
@@ -450,6 +498,8 @@ body{
   <div class="footer">
     <a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer">MVB – Deutschland-Ticket</a>
   </div>
+  
+  <div class="liveness-indicator"></div>
 
 </div>
 
@@ -461,9 +511,12 @@ const transportItems = [
   { src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
 ];
 
-// AKTUALISIERTER HTML-CODE FÜR DEN VOLLBILD-QR-CODE MIT BENUTZERDATEN
 const qrHtml = `
 <div class="fullscreen-qr hidden" id="qrFull">
+  <div class="fs-status-indicator">
+      <span class="fs-status-dot"></span>
+      Ticket Aktiv
+  </div>
   <button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
   
   <div class="fullscreen-header">
