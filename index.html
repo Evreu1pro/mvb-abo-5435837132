@@ -67,7 +67,7 @@ body{
   padding:24px;
   box-sizing:border-box;
   position:relative;
-  overflow: hidden; /* Wichtig für die untere Leiste */
+  overflow: hidden;
 }
 .logo-header-container {
   text-align:center;
@@ -280,7 +280,7 @@ body{
   text-align:center;
   border-top:1px dashed var(--border);
   padding-top:16px;
-  margin-bottom: 5px; /* Platz für die untere Leiste schaffen */
+  margin-bottom: 5px;
 }
 .footer a {
   color:var(--accent);
@@ -354,7 +354,6 @@ body{
     font-weight: 600;
 }
 
-/* --- NEUE STILE --- */
 .liveness-indicator {
     position: absolute;
     bottom: 0;
@@ -382,7 +381,7 @@ body{
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     border: 1px solid var(--border);
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
@@ -394,23 +393,61 @@ body{
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.7); }
+    0% { box-shadow: 极速0 0 0 0 rgba(var(--accent-rgb), 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0); }
     100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
 }
 
-/* Neuer Stil für das MVB-Logo */
 .fs-status-logo {
     height: 20px;
     width: auto;
-    filter: brightness(0) invert(0); /* Standard: schwarzes Logo für helle Themes */
+    filter: brightness(0) invert(0);
 }
+
+.fs-current-time {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fg);
+    background: rgba(var(--accent-rgb), 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.fs-support-link {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.fs-support-link a {
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+
+.fs-support-link a:hover {
+    text-decoration: underline;
+    color: var(--link-hover-color);
+}
+
+.fs-support-link svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
 @media (prefers-color-scheme: dark) {
     .fs-status-logo {
-        filter: brightness(0) invert(1); /* Für dunkle Themes: weißes Logo */
+        filter: brightness(0) invert(1);
     }
 }
-/* --- ENDE DER NEUEN STILE --- */
 </style>
 </head>
 
@@ -438,11 +475,11 @@ body{
     </div>
     <div class="info-item">
       <span class="label">gültig ab</span>
-      <span class="value">01.08.2025 00:00</span>
+      <span class="value" id="validFrom">01.08.2025 00:00</span>
     </div>
     <div class="info-item">
       <span class="label">gültig bis</span>
-      <span class="value">01.09.2025 03:00</span>
+      <span class="value" id="validTo">01.09.2025 03:00</span>
     </div>
     <div class="info-item">
       <span class="label">Geltungsbereich</span>
@@ -469,7 +506,7 @@ body{
       Kontrollmedium: gültiger amtlicher Lichtbildausweis.
       
       <div class="live-status-container">
-        <div class="status-header">
+        <div class极速="status-header">
           <span id="live-time"></span>
           <span id="countdown-text"></span>
         </div>
@@ -523,10 +560,76 @@ const transportItems = [
   { src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
 ];
 
+// Funktion zur Berechnung der automatischen Verlängerung
+function calculateAutoRenewalDates() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    // Startdatum: Erster Tag des aktuellen Monats
+    const startDate = new Date(currentYear, currentMonth, 1);
+    
+    // Enddatum: Erster Tag des nächsten Monats um 3:00 Uhr
+    const endDate = new Date(currentYear, currentMonth + 1, 1, 3, 0, 0);
+    
+    return {
+        start: startDate,
+        end: endDate
+    };
+}
+
+// Funktion zum Formatieren des Datums
+function formatDate(date, includeTime = false) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    if (includeTime) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}.${month}.${year} ${hours}:${minutes}`;
+    }
+    
+    return `${极速day}.${month}.${year}`;
+}
+
+// Funktion zum Formatieren der aktuellen Zeit für den Vollbildmodus
+function formatCurrentTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
+// Aktualisiere die Datumsanzeigen
+function updateDateDisplays() {
+    const dates = calculateAutoRenewalDates();
+    
+    // Aktualisiere die Hauptansicht
+    document.getElementById('validFrom').textContent = formatDate(dates.start, true);
+    document.getElementById('validTo').textContent = formatDate(dates.end, true);
+    
+    // Aktualisiere die Vollbildansicht
+    const fsValidFrom = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(1) .fs-value');
+    const fsValidTo = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(2) .fs-value');
+    
+    if (fsValidFrom) fsValidFrom.textContent = formatDate(dates.start);
+    if (fsValidTo) fsValidTo.textContent = formatDate(dates.end);
+}
+
+// Aktualisiere die aktuelle Zeit im Vollbildmodus
+function updateFullscreenTime() {
+    const timeElement = document.getElementById('fsCurrentTime');
+    if (timeElement) {
+        timeElement.textContent = formatCurrentTime();
+    }
+}
+
 const qrHtml = `
 <div class="fullscreen-qr hidden" id="qrFull">
   <div class="fs-status-indicator">
       <img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" class="fs-status-logo">
+      <span class="fs-current-time" id="fsCurrentTime">${formatCurrentTime()}</span>
   </div>
   <button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
   
@@ -552,6 +655,13 @@ const qrHtml = `
       <span class="fs-label">Gültig bis</span>
       <span class="fs-value">01.09.2025</span>
     </div>
+  </div>
+
+  <div class="fs-support-link">
+    <a href="https://www.mvbnet.de/service/kontakte/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c极速0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      Problem mit dem Ticket? Kontaktieren Sie uns
+    </a>
   </div>
 </div>`;
 document.body.insertAdjacentHTML('beforeend', qrHtml);
@@ -580,6 +690,11 @@ function toggleQR() {
   const qrElement = document.getElementById('qrFull');
   qrElement.classList.toggle('hidden');
   document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
+  
+  // Aktualisiere die Zeit, wenn der Vollbildmodus geöffnet wird
+  if (!qrElement.classList.contains('hidden')) {
+      updateFullscreenTime();
+  }
 }
 
 function toggleDetails() {
@@ -618,12 +733,27 @@ function initLiveStatus() {
     const secondsRemaining = countdownDuration - secondsElapsed;
     countdownElement.textContent = `Nächste in ${secondsRemaining}s`;
 
+    // Aktualisiere auch die Zeit im Vollbildmodus, wenn er geöffnet ist
+    if (!document.getElementById('qrFull').classList.contains('hidden')) {
+        updateFullscreenTime();
+    }
+
   }, 1000);
+}
+
+// Prüfe monatlich, ob die Datumsanzeigen aktualisiert werden müssen
+function setupMonthlyDateCheck() {
+    // Aktualisiere sofort beim Laden
+    updateDateDisplays();
+    
+    // Prüfe alle 24 Stunden, ob ein Monatswechsel stattgefunden hat
+    setInterval(updateDateDisplays, 24 * 60 * 60 * 1000);
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
   initTransportStrip();
   initLiveStatus();
+  setupMonthlyDateCheck();
   
   const pageQRImage = document.getElementById('pageQR');
   if (pageQRImage) {
