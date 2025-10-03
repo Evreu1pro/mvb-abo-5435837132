@@ -150,6 +150,7 @@ body{
   background-color: var(--qr-container-bg);
   object-fit: contain;
   padding: 10px;
+  cursor: pointer;
 }
 .info-grid{
   display:grid;
@@ -393,7 +394,7 @@ body{
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
-    0% { box-shadow: 极速0 0 0 0 rgba(var(--accent-rgb), 0.7); }
+    0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0); }
     100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
 }
@@ -442,6 +443,47 @@ body{
     height: 16px;
     fill: currentColor;
 }
+
+/* --- NEW STYLES FOR SUPER ZOOM --- */
+.super-zoom-qr {
+  position: fixed;
+  inset: 0;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Higher than the normal fullscreen */
+  animation: fadeIn .2s ease;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.super-zoom-qr.hidden {
+  display: none;
+}
+.qr-super-zoom-image {
+  width: 90vmin;
+  height: 90vmin;
+  max-width: 600px;
+  max-height: 600px;
+  object-fit: contain;
+}
+.close-super-zoom {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  color: var(--fg);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.close-super-zoom:hover {
+    background-color: var(--border);
+}
+/* --- END OF NEW STYLES --- */
+
 
 @media (prefers-color-scheme: dark) {
     .fs-status-logo {
@@ -506,7 +548,7 @@ body{
       Kontrollmedium: gültiger amtlicher Lichtbildausweis.
       
       <div class="live-status-container">
-        <div class极速="status-header">
+        <div class="status-header">
           <span id="live-time"></span>
           <span id="countdown-text"></span>
         </div>
@@ -566,16 +608,10 @@ function calculateAutoRenewalDates() {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
     
-    // Startdatum: Erster Tag des aktuellen Monats
     const startDate = new Date(currentYear, currentMonth, 1);
-    
-    // Enddatum: Erster Tag des nächsten Monats um 3:00 Uhr
     const endDate = new Date(currentYear, currentMonth + 1, 1, 3, 0, 0);
     
-    return {
-        start: startDate,
-        end: endDate
-    };
+    return { start: startDate, end: endDate };
 }
 
 // Funktion zum Formatieren des Datums
@@ -590,7 +626,7 @@ function formatDate(date, includeTime = false) {
         return `${day}.${month}.${year} ${hours}:${minutes}`;
     }
     
-    return `${极速day}.${month}.${year}`;
+    return `${day}.${month}.${year}`;
 }
 
 // Funktion zum Formatieren der aktuellen Zeit für den Vollbildmodus
@@ -605,11 +641,9 @@ function formatCurrentTime() {
 function updateDateDisplays() {
     const dates = calculateAutoRenewalDates();
     
-    // Aktualisiere die Hauptansicht
     document.getElementById('validFrom').textContent = formatDate(dates.start, true);
     document.getElementById('validTo').textContent = formatDate(dates.end, true);
     
-    // Aktualisiere die Vollbildansicht
     const fsValidFrom = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(1) .fs-value');
     const fsValidTo = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(2) .fs-value');
     
@@ -625,6 +659,7 @@ function updateFullscreenTime() {
     }
 }
 
+// --- HTML TEMPLATES FOR OVERLAYS ---
 const qrHtml = `
 <div class="fullscreen-qr hidden" id="qrFull">
   <div class="fs-status-indicator">
@@ -632,39 +667,32 @@ const qrHtml = `
       <span class="fs-current-time" id="fsCurrentTime">${formatCurrentTime()}</span>
   </div>
   <button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
-  
   <div class="fullscreen-header">
-    <div class="fs-info-item">
-      <span class="fs-label">Name</span>
-      <span class="fs-value">Yehor Antoniuk</span>
-    </div>
-    <div class="fs-info-item">
-      <span class="fs-label">Geburtsdatum</span>
-      <span class="fs-value">31.05.2004</span>
-    </div>
+    <div class="fs-info-item"><span class="fs-label">Name</span><span class="fs-value">Yehor Antoniuk</span></div>
+    <div class="fs-info-item"><span class="fs-label">Geburtsdatum</span><span class="fs-value">31.05.2004</span></div>
   </div>
-  
   <img src="image_2025-09-03_15-42-07.png" alt="QR-Code Vollbild" class="qr-big" id="fullScreenQR">
-  
   <div class="fullscreen-footer">
-    <div class="fs-info-item">
-      <span class="fs-label">Gültig von</span>
-      <span class="fs-value">01.08.2025</span>
-    </div>
-    <div class="fs-info-item">
-      <span class="fs-label">Gültig bis</span>
-      <span class="fs-value">01.09.2025</span>
-    </div>
+    <div class="fs-info-item"><span class="fs-label">Gültig von</span><span class="fs-value">01.08.2025</span></div>
+    <div class="fs-info-item"><span class="fs-label">Gültig bis</span><span class="fs-value">01.09.2025</span></div>
   </div>
-
   <div class="fs-support-link">
     <a href="https://www.mvbnet.de/service/kontakte/" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c极速0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-      Problem mit dem Ticket? Kontaktieren Sie uns
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      Problem mit dem Ticket?
     </a>
   </div>
 </div>`;
+
+const superZoomHtml = `
+<div class="super-zoom-qr hidden" id="qrSuperZoom">
+  <img src="image_2025-09-03_15-42-07.png" alt="QR-Code Super Zoom" class="qr-super-zoom-image">
+  <button class="close-super-zoom" onclick="closeSuperZoom()">Zurück</button>
+</div>`;
+
 document.body.insertAdjacentHTML('beforeend', qrHtml);
+document.body.insertAdjacentHTML('beforeend', superZoomHtml);
+
 
 function initTransportStrip() {
     const stripInner = document.getElementById('transportStrip');
@@ -675,8 +703,7 @@ function initTransportStrip() {
             const transportItem = document.createElement('div');
             transportItem.className = 'transport-item';
             const img = document.createElement('img');
-            img.src = item.src;
-            img.alt = item.label;
+            img.src = item.src; img.alt = item.label;
             const span = document.createElement('span');
             span.textContent = item.label;
             transportItem.appendChild(img);
@@ -686,71 +713,93 @@ function initTransportStrip() {
     }
 }
 
+// --- FUNCTIONS TO CONTROL OVERLAYS ---
 function toggleQR() {
   const qrElement = document.getElementById('qrFull');
   qrElement.classList.toggle('hidden');
   document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
-  
-  // Aktualisiere die Zeit, wenn der Vollbildmodus geöffnet wird
   if (!qrElement.classList.contains('hidden')) {
       updateFullscreenTime();
   }
 }
 
+function openSuperZoom() {
+    document.getElementById('qrFull').classList.add('hidden');
+    document.getElementById('qrSuperZoom').classList.remove('hidden');
+}
+
+function closeSuperZoom() {
+    document.getElementById('qrSuperZoom').classList.add('hidden');
+    document.getElementById('qrFull').classList.remove('hidden');
+}
+
+
 function toggleDetails() {
   const detailsContent = document.getElementById('detailsContent');
   const button = document.querySelector('.toggle-details');
   detailsContent.classList.toggle('expanded');
-  
-  if (detailsContent.classList.contains('expanded')) {
-      button.textContent = 'Weniger anzeigen';
-  } else {
-      button.textContent = 'Mehr anzeigen';
-  }
+  button.textContent = detailsContent.classList.contains('expanded') ? 'Weniger anzeigen' : 'Mehr anzeigen';
 }
 
 function initLiveStatus() {
   const timeElement = document.getElementById('live-time');
   const countdownElement = document.getElementById('countdown-text');
   const countdownDuration = 60;
-
   if (!timeElement || !countdownElement) return;
 
   const dateTimeFormatter = new Intl.DateTimeFormat('de-DE', {
       timeZone: 'Europe/Berlin',
       year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: false
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
   });
 
   setInterval(() => {
     const now = new Date();
-    
-    const formattedDate = dateTimeFormatter.format(now);
-    timeElement.textContent = `Stand: ${formattedDate}`;
-
-    const secondsElapsed = Math.floor(now.getTime() / 1000) % countdownDuration;
-    const secondsRemaining = countdownDuration - secondsElapsed;
+    timeElement.textContent = `Stand: ${dateTimeFormatter.format(now)}`;
+    const secondsRemaining = countdownDuration - (Math.floor(now.getTime() / 1000) % countdownDuration);
     countdownElement.textContent = `Nächste in ${secondsRemaining}s`;
-
-    // Aktualisiere auch die Zeit im Vollbildmodus, wenn er geöffnet ist
     if (!document.getElementById('qrFull').classList.contains('hidden')) {
         updateFullscreenTime();
     }
-
   }, 1000);
 }
 
-// Prüfe monatlich, ob die Datumsanzeigen aktualisiert werden müssen
 function setupMonthlyDateCheck() {
-    // Aktualisiere sofort beim Laden
     updateDateDisplays();
-    
-    // Prüfe alle 24 Stunden, ob ein Monatswechsel stattgefunden hat
     setInterval(updateDateDisplays, 24 * 60 * 60 * 1000);
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
+// --- SMART EVENT LISTENER FOR SHORT/LONG PRESS ---
+function addSmartEventListener(element, callback) {
+    let timerId;
+    let isLongPress = false;
+
+    function pressStart(event) {
+        event.preventDefault();
+        isLongPress = false;
+        timerId = setTimeout(() => {
+            isLongPress = true;
+            if (callback.long) callback.long();
+        }, 500); // 500ms threshold for long press
+    }
+
+    function pressEnd(event) {
+        clearTimeout(timerId);
+        if (!isLongPress && callback.short) {
+            callback.short();
+        }
+    }
+    // Mouse events
+    element.addEventListener('mousedown', pressStart);
+    element.addEventListener('mouseup', pressEnd);
+    element.addEventListener('mouseleave', () => clearTimeout(timerId));
+    // Touch events
+    element.addEventListener('touchstart', pressStart);
+    element.addEventListener('touchend', pressEnd);
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
   initTransportStrip();
   initLiveStatus();
   setupMonthlyDateCheck();
@@ -759,9 +808,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
   if (pageQRImage) {
       pageQRImage.addEventListener('click', toggleQR);
   }
+
+  const fullScreenQR = document.getElementById('fullScreenQR');
+  if (fullScreenQR) {
+      addSmartEventListener(fullScreenQR, {
+          short: toggleQR,       // Function for short press (click)
+          long: openSuperZoom    // Function for long press
+      });
+  }
 });
 </script>
 
 </body>
 </html>
-
