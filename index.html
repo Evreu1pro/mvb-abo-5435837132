@@ -651,9 +651,9 @@ body{
 
 <script>
 const transportItems = [
-  { src: 'https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png', label: 'Tram' },
+  { src: 'https://cdn.pixabay.com/photo/2012/04/24/10/26/transportation-39869_1280.png', label: 'Tram' },
   { src: 'https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png', label: 'Bus' },
-  { src: 'https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg', label: 'Zug' },
+  { src: 'https://www.nasa.de/typo3conf/ext/zs/svg/icon-zug.svg', label: 'Zug' },
   { src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
 ];
 
@@ -714,40 +714,118 @@ function updateFullscreenTime() {
     }
 }
 
-// --- HTML TEMPLATES FOR OVERLAYS ---
-const qrHtml = `
-<div class="fullscreen-qr hidden" id="qrFull">
-  <div class="fs-status-indicator">
-      <img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" class="fs-status-logo">
-      <span class="fs-current-time" id="fsCurrentTime">${formatCurrentTime()}</span>
-  </div>
-  <button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
-  <div class="fullscreen-header">
-    <div class="fs-info-item"><span class="fs-label">Name</span><span class="fs-value">Yehor Antoniuk</span></div>
-    <div class="fs-info-item"><span class="fs-label">Geburtsdatum</span><span class="fs-value">31.05.2004</span></div>
-  </div>
-  <img src="qr-code.png" alt="QR-Code" class="page-qr-image" id="qrCodeImage">
-  <div class="fullscreen-footer">
-    <div class="fs-info-item"><span class="fs-label">Gültig von</span><span class="fs-value">01.08.2025</span></div>
-    <div class="fs-info-item"><span class="fs-label">Gültig bis</span><span class="fs-value">01.09.2025</span></div>
-  </div>
-  <div class="fs-support-link">
-    <a href="https://www.mvbnet.de/service/kontakte/" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-      Problem mit dem Ticket?
-    </a>
-  </div>
-</div>`;
+// --- НОВЫЕ ФУНКЦИИ ДЛЯ УВЕДОМЛЕНИЯ ---
 
-const superZoomHtml = `
-<div class="super-zoom-qr hidden" id="qrSuperZoom">
-  <img src="image_2025-09-03_15-42-07.png" alt="QR-Code Super Zoom" class="qr-super-zoom-image">
-  <button class="close-super-zoom" onclick="closeSuperZoom()">Zurück</button>
-</div>`;
+// Функция для показа всплывающего уведомления
+function showNotification(message, duration = 3000) {
+    const notificationEl = document.getElementById('notification');
+    const notificationTextEl = document.getElementById('notification-text');
+    
+    notificationTextEl.textContent = message;
+    notificationEl.classList.add('show');
 
-document.body.insertAdjacentHTML('beforeend', qrHtml);
-document.body.insertAdjacentHTML('beforeend', superZoomHtml);
+    setTimeout(() => {
+        notificationEl.classList.remove('show');
+    }, duration);
+}
 
+// Функция для запуска обновления
+async function triggerUpdate() {
+    const button = document.getElementById('updateButtonInline');
+    const buttonText = document.getElementById('updateButtonTextInline');
+    
+    button.disabled = true;
+    buttonText.textContent = 'Aktualisiere...';
+
+    try {
+        // ВАЖНО: Для реального сайта используйте бэкенд для хранения токена.
+        const repo = 'ВАШЕ_ИМЯ_ПОЛЬЗОВАТЕЛЯ/ВАШЕ_РЕПОЗИТОРИЕ';
+        const pat = 'ВАШ_СЕКРЕТНЫЙ_ТОКЕН';
+        
+        const url = `https://api.github.com/repos/${repo}/dispatches`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `token ${pat}`,
+                'Content-Type': 'application/json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            },
+            body: JSON.stringify({
+                event_type: 'ticket-update'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Fehler: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('GitHub Antwort:', result.message);
+
+        // Показываем уведомление об успехе
+        showNotification('QR-Code wurde aktualisiert!');
+
+        buttonText.textContent = 'Aktualisiert!';
+        setTimeout(() => {
+            buttonText.textContent = 'Jetzt aktualisieren';
+            button.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        console.error('Fehler bei der Aktualisierung:', error);
+        
+        // Показываем уведомление об ошибке
+        showNotification('Fehler bei der Aktualisierung!');
+
+        buttonText.textContent = 'Fehler!';
+        setTimeout(() => {
+            buttonText.textContent = 'Jetzt aktualisieren';
+            button.disabled = false;
+        }, 3000);
+    }
+}
+
+// Функция toggleDetails остается без изменений
+function toggleDetails() {
+  const detailsContent = document.getElementById('detailsContent');
+  const button = document.querySelector('.toggle-details');
+  
+  const isExpanded = detailsContent.classList.contains('expanded');
+  
+  if (isExpanded) {
+    detailsContent.classList.remove('expanded');
+    button.textContent = 'Mehr anzeigen';
+  } else {
+    detailsContent.classList.add('expanded');
+    button.textContent = 'Weniger anzeigen';
+  }
+}
+
+// Функция для проверки недавнего обновления
+async function checkForRecentUpdate() {
+    try {
+        const response = await fetch('./update_history.json');
+        if (!response.ok) return; // Если файла нет, ничего не делаем
+        
+        const history = await response.json();
+        if (history.length > 0) {
+            const lastUpdateTimestamp = new Date(history[0].timestamp);
+            const now = new Date();
+            const timeDiffMs = now - lastUpdateTimestamp;
+            const FIVE_MINUTES_MS = 5 * 60 * 1000;
+
+            if (timeDiffMs < FIVE_MINUTES_MS) {
+                showNotification('QR-Code ist aktuell!', 4000); // Показываем на 4 секунды
+            }
+        }
+    } catch (error) {
+        console.error("Не удалось проверить историю обновлений:", error);
+    }
+}
+
+// --- СТАРЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ) ---
 
 function initTransportStrip() {
     const stripInner = document.getElementById('transportStrip');
@@ -758,7 +836,8 @@ function initTransportStrip() {
             const transportItem = document.createElement('div');
             transportItem.className = 'transport-item';
             const img = document.createElement('img');
-            img.src = item.src; img.alt = item.label;
+            img.src = item.src;
+            img.alt = item.label;
             const span = document.createElement('span');
             span.textContent = item.label;
             transportItem.appendChild(img);
@@ -766,34 +845,6 @@ function initTransportStrip() {
             stripInner.appendChild(transportItem);
         });
     }
-}
-
-// --- FUNCTIONS TO CONTROL OVERLAYS ---
-function toggleQR() {
-  const qrElement = document.getElementById('qrFull');
-  qrElement.classList.toggle('hidden');
-  document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
-  if (!qrElement.classList.contains('hidden')) {
-      updateFullscreenTime();
-  }
-}
-
-function openSuperZoom() {
-    document.getElementById('qrFull').classList.add('hidden');
-    document.getElementById('qrSuperZoom').classList.remove('hidden');
-}
-
-function closeSuperZoom() {
-    document.getElementById('qrSuperZoom').classList.add('hidden');
-    document.getElementById('qrFull').classList.remove('hidden');
-}
-
-
-function toggleDetails() {
-  const detailsContent = document.getElementById('detailsContent');
-  const button = document.querySelector('.toggle-details');
-  detailsContent.classList.toggle('expanded');
-  button.textContent = detailsContent.classList.contains('expanded') ? 'Weniger anzeigen' : 'Mehr anzeigen';
 }
 
 function initLiveStatus() {
@@ -813,9 +864,7 @@ function initLiveStatus() {
     timeElement.textContent = `Stand: ${dateTimeFormatter.format(now)}`;
     const secondsRemaining = countdownDuration - (Math.floor(now.getTime() / 1000) % countdownDuration);
     countdownElement.textContent = `Nächste in ${secondsRemaining}s`;
-    if (!document.getElementById('qrFull').classList.contains('hidden')) {
-        updateFullscreenTime();
-    }
+    updateFullscreenTime();
   }, 1000);
 }
 
@@ -824,7 +873,8 @@ function setupMonthlyDateCheck() {
     setInterval(updateDateDisplays, 24 * 60 * 60 * 1000);
 }
 
-// --- SMART EVENT LISTENER FOR SHORT/LONG PRESS ---
+// --- УМНЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ QR-КОДА И ПОКАЗА НА НЕГО ---
+
 function addSmartEventListener(element, callback) {
     let timerId;
     let isLongPress = false;
@@ -835,7 +885,7 @@ function addSmartEventListener(element, callback) {
         timerId = setTimeout(() => {
             isLongPress = true;
             if (callback.long) callback.long();
-        }, 500); // 500ms threshold for long press
+        }, 500); // 500ms для долгого нажатия
     }
 
     function pressEnd(event) {
@@ -853,7 +903,7 @@ function addSmartEventListener(element, callback) {
     element.addEventListener('touchend', pressEnd);
 }
 
-// --- INITIALIZATION ---
+// --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
 document.addEventListener('DOMContentLoaded', () => {
   initTransportStrip();
   initLiveStatus();
@@ -867,15 +917,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullScreenQR = document.getElementById('fullScreenQR');
   if (fullScreenQR) {
       addSmartEventListener(fullScreenQR, {
-          short: toggleQR,       // Function for short press (click)
-          long: openSuperZoom    // Function for long press
+          short: toggleQR,       // Функция для короткого нажатия (клик)
+          long: openSuperZoom    // Функция для долгого нажатия
       });
   }
+
+  // Проверяем, не было ли обновление недавно при загрузке страницы
+  checkForRecentUpdate();
 });
 </script>
 
 </body>
 </html>
+
 
 
 
