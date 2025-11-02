@@ -468,6 +468,28 @@ body{
   max-height: 600px;
   object-fit: contain;
 }
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .close-super-zoom {
   margin-top: 20px;
   padding: 12px 24px;
@@ -482,6 +504,30 @@ body{
 .close-super-zoom:hover {
     background-color: var(--border);
 }
+/* Стили для встроенной кнопки обновления */
+.update-button-inline {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    background-color: var(--surface);
+    color: var(--accent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.update-button-inline:hover {
+    background-color: var(--accent);
+    color: white;
+}
+
+.update-button-inline:disabled {
+    background-color: var(--subtle);
+    color: var(--fg);
+    cursor: not-allowed;
+    border-color: var(--border);
+}  
 /* --- END OF NEW STYLES --- */
 
 
@@ -494,6 +540,9 @@ body{
 </head>
 
 <body>
+    <div id="notification" class="notification hidden">
+      <span id="notification-text">QR-Code wurde aktualisiert!</span>
+    </div>
 <div class="ticket-container">
 
   <div class="logo-header-container">
@@ -560,7 +609,9 @@ body{
           <div class="progress-bar" id="progressBar"></div>
         </div>
       </div>
-      
+          <button class="update-button-inline" onclick="triggerUpdate()" id="updateButtonInline">
+            <span id="updateButtonTextInline">Jetzt aktualisieren</span>
+          </button>
       <div class="details-links">
         <a href="https://mvb-verkehrsmelder.de/" target="_blank" rel="noopener noreferrer" class="details-link">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -825,6 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
