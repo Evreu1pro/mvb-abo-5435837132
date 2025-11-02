@@ -1,1 +1,60 @@
+# .github/workflows/update-qr-ticket.yml
+name: Обновить QR-код и ID билета
 
+on:
+  schedule:
+    - cron: '0 5,3 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-ticket-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Клонировать репозиторий
+        uses: actions/checkout@v4
+
+      - name: Скачать данные билета
+        run: |
+          echo "--- Скачивание QR-кода ---"
+          # !!! Замените URL на прямую ссылку на изображение
+          curl "URL_НА_ВАШЕ_ИЗОБРАЖЕНИЕ.png" -o qr-code.png
+          
+          if [ ! -s qr-code.png ]; then
+            echo "Ошибка: Файл qr-code.png не был загружен."
+            exit 1
+          fi
+          echo "QR-код успешно скачан."
+
+          echo "--- Получение ID билета ---"
+          # !!! ВАЖНО: Здесь нужно указать, как получить ID.
+          # Вариант А (идеальный): ID доступен по прямой ссылке как текст
+          # TICKET_ID=$(curl -s "URL_ГДЕ_ЛЕЖИТ_ID_БИЛЕТА.txt")
+          
+          # Вариант Б (если нет ссылки): ID нужно извлечь из HTML-страницы
+          # Это сложнее и требует дополнительных инструментов. Для начала попробуйте Вариант А.
+          
+          # ДЛЯ ПРИМЕРА, ЗАСТАВЛЯЕМ РАБОТАТЬ С ЗАГЛУШКОЙ
+          # !!! ЗАМЕНИТЕ ЭТУ СТРОКУ НА ОДИН ИЗ ВАРИАНТОВ ВЫШЕ
+          TICKET_ID="12345678" 
+
+          if [ -z "$TICKET_ID" ]; then
+            echo "Ошибка: ID билета не был получен."
+            exit 1
+          fi
+          echo "Новый ID билета: ${TICKET_ID}"
+
+          echo "--- Обновление HTML файла ---"
+          # Заменяем старый ID в index.html на новый
+          sed -i "s|<span class=\"value\" id=\"ticket-id\">.*</span>|<span class=\"value\" id=\"ticket-id\">${TICKET_ID}</span>|" index.html
+          echo "HTML файл обновлен."
+
+      # Шаг 3: Сохраняем и запушиваем изменения
+      - name: Сохранить и запушить изменения
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Автообновление: QR-код и ID билета"
+          branch: main # Укажите вашу основную ветку
+          file_pattern: 'qr-code.png index.html' # Обновляем оба файла
