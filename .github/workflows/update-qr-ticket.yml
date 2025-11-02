@@ -1,6 +1,7 @@
 # .github/workflows/update-qr-ticket.yml
 name: Обновить QR-код и ID билета
 
+# Запускать по расписанию: в 5:00 и 3:00 UTC каждый день
 on:
   schedule:
     - cron: '0 5,3 * * *'
@@ -10,48 +11,35 @@ jobs:
   update-ticket-data:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Дать разрешение на запись в репозиторий
 
     steps:
+      # Шаг 1: Клонируем репозиторий
       - name: Клонировать репозиторий
         uses: actions/checkout@v4
 
-      - name: Скачать данные билета
+      # Шаг 2: Устанавливаем Python и необходимые библиотеки
+      - name: Установить Python и зависимости
         run: |
-          echo "--- Скачивание QR-кода ---"
-          # !!! Замените URL на прямую ссылку на изображение
-          curl "URL_НА_ВАШЕ_ИЗОБРАЖЕНИЕ.png" -o qr-code.png
+          python -m pip install requests beautifulsoup4
+
+      # Шаг 3: Запускаем Python-скрипт для извлечения данных
+      - name: Извлечь данные билета
+        run: python update_ticket.py
+
+      # Шаг 4: Читаем номер билета из временного файла и обновляем index.html
+      - name: Обновить номер билета в index.html
+        run: |
+          # Читаем новый номер билета
+          NEW_TICKET_NUMBER=$(cat ticket_number.txt)
+          echo "Новый номер билета для вставки: $NEW_TICKET_NUMBER"
           
-          if [ ! -s qr-code.png ]; then
-            echo "Ошибка: Файл qr-code.png не был загружен."
-            exit 1
-          fi
-          echo "QR-код успешно скачан."
+          # Используем sed для замены старого номера на новый
+          # Ищем строку <span class="value" id="ticketNumber">...</span> и заменяем ее
+          sed -i "s|<span class=\"value\" id=\"ticketNumber\">.*</span>|<span class=\"value\" id=\"ticketNumber\">${NEW_TICKET_NUMBER}</span>|g" index.html
+          echo "index.html обновлен."
 
-          echo "--- Получение ID билета ---"
-          # !!! ВАЖНО: Здесь нужно указать, как получить ID.
-          # Вариант А (идеальный): ID доступен по прямой ссылке как текст
-          # TICKET_ID=$(curl -s "URL_ГДЕ_ЛЕЖИТ_ID_БИЛЕТА.txt")
-          
-          # Вариант Б (если нет ссылки): ID нужно извлечь из HTML-страницы
-          # Это сложнее и требует дополнительных инструментов. Для начала попробуйте Вариант А.
-          
-          # ДЛЯ ПРИМЕРА, ЗАСТАВЛЯЕМ РАБОТАТЬ С ЗАГЛУШКОЙ
-          # !!! ЗАМЕНИТЕ ЭТУ СТРОКУ НА ОДИН ИЗ ВАРИАНТОВ ВЫШЕ
-          TICKET_ID="12345678" 
-
-          if [ -z "$TICKET_ID" ]; then
-            echo "Ошибка: ID билета не был получен."
-            exit 1
-          fi
-          echo "Новый ID билета: ${TICKET_ID}"
-
-          echo "--- Обновление HTML файла ---"
-          # Заменяем старый ID в index.html на новый
-          sed -i "s|<span class=\"value\" id=\"ticket-id\">.*</span>|<span class=\"value\" id=\"ticket-id\">${TICKET_ID}</span>|" index.html
-          echo "HTML файл обновлен."
-
-      # Шаг 3: Сохраняем и запушиваем изменения
+      # Шаг 5: Сохраняем и отправляем изменения в репозиторий
       - name: Сохранить и запушить изменения
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
