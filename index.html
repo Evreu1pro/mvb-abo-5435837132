@@ -609,7 +609,7 @@ body{
           <div class="progress-bar" id="progressBar"></div>
         </div>
       </div>
-          <button class="update-button-inline" onclick="triggerUpdate()" id="updateButtonInline">
+          <button class="update-button-inline" id="updateButtonInline">
             <span id="updateButtonTextInline">Jetzt aktualisieren</span>
           </button>
       <div class="details-links">
@@ -909,6 +909,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initLiveStatus();
   setupMonthlyDateCheck();
   
+  const updateButton = document.getElementById('updateButtonInline');
+if (updateButton) {
+    updateButton.addEventListener('click', triggerUpdate);
+}
+
+// --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
+document.addEventListener('DOMContentLoaded', () => {
+  initTransportStrip();
+  initLiveStatus();
+  setupMonthlyDateCheck();
+  
   const pageQRImage = document.getElementById('pageQR');
   if (pageQRImage) {
       pageQRImage.addEventListener('click', toggleQR);
@@ -917,8 +928,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullScreenQR = document.getElementById('fullScreenQR');
   if (fullScreenQR) {
       addSmartEventListener(fullScreenQR, {
-          short: toggleQR,       // Функция для короткого нажатия (клик)
-          long: openSuperZoom    // Функция для долгого нажатия
+          short: toggleQR,
+          long: openSuperZoom
       });
   }
 
@@ -929,6 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
