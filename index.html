@@ -501,7 +501,7 @@ body{
   </div>
 
   <div class="page-qr">
-    <img src="image_2025-09-03_15-42-07.png" alt="QR-Code" class="page-qr-image" id="pageQR">
+    <img src="qr-code.png" alt="QR-Code" class="page-qr-image" id="qrCodeImage">
   </div>
 
   <button class="qr-btn" onclick="toggleQR()">QR-Code auf Vollbild anzeigen</button>
@@ -517,7 +517,7 @@ body{
     </div>
     <div class="info-item">
       <span class="label">Ticket-Nr.</span>
-      <span class="value" id="ticket-id">9454236</span>
+      <span class="value" id="ticketNumber">9454236</span>
     </div>
     <div class="info-item">
       <span class="label">gültig ab</span>
@@ -667,7 +667,7 @@ function updateFullscreenTime() {
 const qrHtml = `
 <div class="fullscreen-qr hidden" id="qrFull">
   <div class="fs-status-indicator">
-      <img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" class="fs-status-logo">
+      <img src="qr-code.png" alt="QR-Code" class="page-qr-image" id="qrCodeImage">
       <span class="fs-current-time" id="fsCurrentTime">${formatCurrentTime()}</span>
   </div>
   <button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
@@ -675,7 +675,7 @@ const qrHtml = `
     <div class="fs-info-item"><span class="fs-label">Name</span><span class="fs-value">Yehor Antoniuk</span></div>
     <div class="fs-info-item"><span class="fs-label">Geburtsdatum</span><span class="fs-value">31.05.2004</span></div>
   </div>
-  <img src="image_2025-09-03_15-42-07.png" alt="QR-Code Vollbild" class="qr-big" id="fullScreenQR">
+  <img src="qr-code.png" alt="QR-Code" class="page-qr-image" id="qrCodeImage">
   <div class="fullscreen-footer">
     <div class="fs-info-item"><span class="fs-label">Gültig von</span><span class="fs-value">01.08.2025</span></div>
     <div class="fs-info-item"><span class="fs-label">Gültig bis</span><span class="fs-value">01.09.2025</span></div>
@@ -825,4 +825,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
