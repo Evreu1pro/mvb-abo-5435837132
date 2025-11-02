@@ -590,7 +590,7 @@ body{
   <div class="details-section">
     <div class="details-header">
       <span>Details und Bedingungen</span>
-      <button class="toggle-details" onclick="toggleDetails()">Mehr anzeigen</button>
+      <button class="toggle-details">Mehr anzeigen</button>
     </div>
     <div class="details-content" id="detailsContent">
       Das Ticket verlängert sich automatisch jeden Monat bis zum Ende des aktuellen Semesters.<br>
@@ -650,73 +650,7 @@ body{
 </div>
 
 <script>
-const transportItems = [
-  { src: 'https://cdn.pixabay.com/photo/2012/04/24/10/26/transportation-39869_1280.png', label: 'Tram' },
-  { src: 'https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png', label: 'Bus' },
-  { src: 'https://www.nasa.de/typo3conf/ext/zs/svg/icon-zug.svg', label: 'Zug' },
-  { src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
-];
-
-// Funktion zur Berechnung der automatischen Verlängerung
-function calculateAutoRenewalDates() {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    
-    const startDate = new Date(currentYear, currentMonth, 1);
-    const endDate = new Date(currentYear, currentMonth + 1, 1, 3, 0, 0);
-    
-    return { start: startDate, end: endDate };
-}
-
-// Funktion zum Formatieren des Datums
-function formatDate(date, includeTime = false) {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    if (includeTime) {
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}.${month}.${year} ${hours}:${minutes}`;
-    }
-    
-    return `${day}.${month}.${year}`;
-}
-
-// Funktion zum Formatieren der aktuellen Zeit für den Vollbildmodus
-function formatCurrentTime() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-// Aktualisiere die Datumsanzeigen
-function updateDateDisplays() {
-    const dates = calculateAutoRenewalDates();
-    
-    document.getElementById('validFrom').textContent = formatDate(dates.start, true);
-    document.getElementById('validTo').textContent = formatDate(dates.end, true);
-    
-    const fsValidFrom = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(1) .fs-value');
-    const fsValidTo = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(2) .fs-value');
-    
-    if (fsValidFrom) fsValidFrom.textContent = formatDate(dates.start);
-    if (fsValidTo) fsValidTo.textContent = formatDate(dates.end);
-}
-
-// Aktualisiere die aktuelle Zeit im Vollbildmodus
-function updateFullscreenTime() {
-    const timeElement = document.getElementById('fsCurrentTime');
-    if (timeElement) {
-        timeElement.textContent = formatCurrentTime();
-    }
-}
-
-// --- НОВЫЕ ФУНКЦИИ ДЛЯ УВЕДОМЛЕНИЯ ---
-
-// Функция для показа всплывающего уведомления
+// --- ГЛОБАЛЬНЫЕ ФУНКЦИИ (доступны из любого места) ---
 function showNotification(message, duration = 3000) {
     const notificationEl = document.getElementById('notification');
     const notificationTextEl = document.getElementById('notification-text');
@@ -729,8 +663,7 @@ function showNotification(message, duration = 3000) {
     }, duration);
 }
 
-// Функция для запуска обновления
-async function triggerUpdate() {
+function triggerUpdate() {
     const button = document.getElementById('updateButtonInline');
     const buttonText = document.getElementById('updateButtonTextInline');
     
@@ -740,7 +673,7 @@ async function triggerUpdate() {
     try {
         // ВАЖНО: Для реального сайта используйте бэкенд для хранения токена.
         const repo = 'ВАШЕ_ИМЯ_ПОЛЬЗОВАТЕЛЯ/ВАШЕ_РЕПОЗИТОРИЕ';
-        const pat = 'ВАШ_СЕКРЕТНЫЙ_ТОКЕН';
+        const pat = 'ВАШЕ_СЕКРЕТНЫЙ_ТОКЕН';
         
         const url = `https://api.github.com/repos/${repo}/dispatches`;
         
@@ -749,7 +682,7 @@ async function triggerUpdate() {
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
                 'Authorization': `token ${pat}`,
-                'Content-Type': 'application/json',
+                'Content-Type': 'all',
                 'X-GitHub-Api-Version': '2022-11-28'
             },
             body: JSON.stringify({
@@ -764,7 +697,6 @@ async function triggerUpdate() {
         const result = await response.json();
         console.log('GitHub Antwort:', result.message);
 
-        // Показываем уведомление об успехе
         showNotification('QR-Code wurde aktualisiert!');
 
         buttonText.textContent = 'Aktualisiert!';
@@ -776,18 +708,16 @@ async function triggerUpdate() {
     } catch (error) {
         console.error('Fehler bei der Aktualisierung:', error);
         
-        // Показываем уведомление об ошибке
         showNotification('Fehler bei der Aktualisierung!');
 
         buttonText.textContent = 'Fehler!';
         setTimeout(() => {
             buttonText.textContent = 'Jetzt aktualisieren';
-            button.disabled = false;
+            button.button.disabled = false;
         }, 3000);
     }
 }
 
-// Функция toggleDetails остается без изменений
 function toggleDetails() {
   const detailsContent = document.getElementById('detailsContent');
   const button = document.querySelector('.toggle-details');
@@ -798,16 +728,15 @@ function toggleDetails() {
     detailsContent.classList.remove('expanded');
     button.textContent = 'Mehr anzeigen';
   } else {
-    detailsContent.classList.add('expanded');
+    detailsContent.classList.add('extended');
     button.textContent = 'Weniger anzeigen';
   }
 }
 
-// Функция для проверки недавнего обновления
-async function checkForRecentUpdate() {
+function checkForRecentUpdate() {
     try {
         const response = await fetch('./update_history.json');
-        if (!response.ok) return; // Если файла нет, ничего не делаем
+        if (!response.ok) return;
         
         const history = await response.json();
         if (history.length > 0) {
@@ -816,8 +745,8 @@ async function checkForRecentUpdate() {
             const timeDiffMs = now - lastUpdateTimestamp;
             const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
-            if (timeDiffMs < FIVE_MINUTES_MS) {
-                showNotification('QR-Code ist aktuell!', 4000); // Показываем на 4 секунды
+            if (timeDiffMs < FIVE_minutes_MS) {
+                showNotification('QR-Code ist aktuell!', 4000);
             }
         }
     } catch (error) {
@@ -825,8 +754,7 @@ async function checkForRecentUpdate() {
     }
 }
 
-// --- СТАРЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ) ---
-
+// --- ФУНКЦИИ, КОТОРЫЕ НУЖНЫ ТОЛЬКО ВНУТРИ (ИНИЦИАЛИЗАЦИЯ) ---
 function initTransportStrip() {
     const stripInner = document.getElementById('transportStrip');
     if (!stripInner) return;
@@ -873,8 +801,6 @@ function setupMonthlyDateCheck() {
     setInterval(updateDateDisplays, 24 * 60 * 60 * 1000);
 }
 
-// --- УМНЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ QR-КОДА И ПОКАЗА НА НЕГО ---
-
 function addSmartEventListener(element, callback) {
     let timerId;
     let isLongPress = false;
@@ -885,7 +811,7 @@ function addSmartEventListener(element, callback) {
         timerId = setTimeout(() => {
             isLongPress = true;
             if (callback.long) callback.long();
-        }, 500); // 500ms для долгого нажатия
+        }, 500);
     }
 
     function pressEnd(event) {
@@ -894,24 +820,11 @@ function addSmartEventListener(element, callback) {
             callback.short();
         }
     }
-    // Mouse events
     element.addEventListener('mousedown', pressStart);
     element.addEventListener('mouseup', pressEnd);
     element.addEventListener('mouseleave', () => clearTimeout(timerId));
-    // Touch events
     element.addEventListener('touchstart', pressStart);
     element.addEventListener('touchend', pressEnd);
-}
-
-// --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
-document.addEventListener('DOMContentLoaded', () => {
-  initTransportStrip();
-  initLiveStatus();
-  setupMonthlyDateCheck();
-  
-  const updateButton = document.getElementById('updateButtonInline');
-if (updateButton) {
-    updateButton.addEventListener('click', triggerUpdate);
 }
 
 // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
@@ -933,6 +846,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // Привязываем событие клика к кнопке "Mehr anzeigen"
+  const detailsButton = document.querySelector('.toggle-details');
+  if (detailsButton) {
+      detailsButton.addEventListener('click', toggleDetails);
+  }
+
+  // Привязываем событие клика к кнопке "Jetzt aktualisieren"
+  const updateButton = document.getElementById('updateButtonInline');
+  if (updateButton) {
+      updateButton.addEventListener('click', triggerUpdate);
+  }
+
   // Проверяем, не было ли обновление недавно при загрузке страницы
   checkForRecentUpdate();
 });
@@ -940,6 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
