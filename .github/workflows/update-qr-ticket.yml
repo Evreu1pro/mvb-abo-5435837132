@@ -60,7 +60,7 @@ with open('ticket_data.json', 'w', encoding='utf-8') as f:
 
       - name: Обновить HTML-файл
         run: |
-          python - <<'PY'
+          python - << 'PY'
 import json
 from bs4 import BeautifulSoup
 
