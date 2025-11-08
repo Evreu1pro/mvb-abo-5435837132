@@ -1,9 +1,8 @@
-# .github/workflows/update-qr-ticket.yml
-name: Обновить QR-код и ID билета
+name: Обновить QR-код и данные билета
 
 on:
   schedule:
-    - cron: '0 3,15 * * *' # 5:00 и 17:00 по центральноевропейскому времени
+    - cron: '0 3,15 * * *'  # Ежедневно в 3:00 и 15:00 UTC (5:00 и 17:00 CET)
   workflow_dispatch:
     inputs:
       force-update:
@@ -30,19 +29,70 @@ jobs:
       - name: Установить зависимости
         run: |
           pip install requests beautifulsoup4
-          
+
       - name: Извлечь данные билета
         id: fetch_ticket
         run: |
           python update_ticket.py
           echo "STATUS=success" >> $GITHUB_OUTPUT
-        continue-on-error: true # Продолжить выполнение даже при ошибке
-      
+        continue-on-error: true
+
       - name: Проверить успешность обновления
         if: steps.fetch_ticket.outputs.STATUS != 'success'
         run: |
           echo "Не удалось обновить билет. Пропускаем коммит."
           exit 0
+
+      - name: Обновить номер билета в index.html
+        run: |
+          # Читаем данные билета из JSON
+          import json
+          with open('ticket_data.json', 'r') as f:
+              ticket_data = json.load(f)
+          
+          # Читаем содержимое index.html
+          with open('index.html', 'r') as f:
+              html_content = f.read()
+          
+          # Заменяем номер билета
+          from bs4 import BeautifulSoup
+          soup = BeautifulSoup(html_content, 'html.parser')
+          ticket_number_el = soup.find(id='ticketNumber')
+          if ticket_number_el:
+              ticket_number_el.string = ticket_data['ticket_number']
+          
+          # Заменяем остальные данные
+          valid_from_el = soup.find(id='validFrom')
+          if valid_from_el:
+              valid_from_el.string = ticket_data['valid_from']
+          
+          valid_until_el = soup.find(id='validUntil')
+          if valid_until_el:
+              valid_until_el.string = ticket_data['valid_until']
+          
+          region_el = soup.find(id='region')
+          if region_el:
+              region_el.string = ticket_data['region']
+          
+          class_el = soup.find(id='class')
+          if class_el:
+              class_el.string = ticket_data['class']
+          
+          price_level_el = soup.find(id='priceLevel')
+          if price_level_el:
+              price_level_el.string = ticket_data.get('price_level', 'deutschlandweit')
+          
+          # Обновляем время последнего обновления
+          last_updated = soup.find(id='lastUpdatedTime')
+          if last_updated:
+              last_updated.string = ticket_data['last_updated']
+          
+          # Сохраняем обновленный HTML
+          with open('index.html', 'w') as f:
+              f.write(str(soup))
+          
+          print("index.html обновлен с данными билета.")
+        shell: python
 
       - name: Проверить изменения в файлах
         id: check_changes
@@ -54,25 +104,15 @@ jobs:
             echo "CHANGES_DETECTED=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Обновить номер билета в index.html
-        if: steps.check_changes.outputs.CHANGES_DETECTED == 'true'
-        run: |
-          NEW_TICKET_NUMBER=$(cat ticket_number.txt)
-          echo "Новый номер билета для вставки: $NEW_TICKET_NUMBER"
-          sed -i "s|<span class=\"value\" id=\"ticketNumber\">[^<]*</span>|<span class=\"value\" id=\"ticketNumber\">${NEW_TICKET_NUMBER}</span>|g" index.html
-          echo "index.html обновлен."
-
-      - name: Удалить временный файл
-        run: rm -f ticket_number.txt
-
       - name: Сохранить и запушить изменения
         if: steps.check_changes.outputs.CHANGES_DETECTED == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Автообновление: QR-код и ID билета $(date '+%d.%m.%Y %H:%M')"
+          commit_message: "Автообновление: QR-код и данные билета $(date '+%d.%m.%Y %H:%M')"
           branch: main
           file_pattern: |
             qr-code.png
+            ticket_data.json
             index.html
           commit_options: '--no-verify'
           push_options: '--no-verify'
