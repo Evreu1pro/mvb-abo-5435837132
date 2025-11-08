@@ -1,814 +1,447 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MVB</title>
-<link rel="icon" href="https://external-content.duckduckgo.com/ip3/www.mvbnet.de.ico" type="image/x-icon">
-
-<style>
-:root{
---bg:#e8f0ec;
---fg:#333;
---surface:#fff;
---border:#d0d0d0;
---subtle:#f0f4f2;
---accent:#008060;
---accent-rgb: 0, 128, 96;
---sh1:rgba(144, 238, 144, .25);
---sh2:rgba(144, 238, 144, .08);
---logo-container-bg: rgba(255, 255, 255, 0.7);
---qr-container-bg: var(--subtle);
---link-color: var(--accent);
---link-hover-color: #005a44;
-}
-@media (prefers-color-scheme: dark){
-:root{
---bg:#0a1e16;
---fg:#e6e6e6;
---surface:#1e1e1e;
---border:#333;
---subtle:#2a2a2a;
---accent:#00e6a8;
---accent-rgb: 0, 230, 168;
---sh1:rgba(0, 230, 168, .08);
---sh2:rgba(0, 230, 168, .03);
---logo-container-bg: rgba(0, 0, 0, 0.3);
---qr-container-bg: var(--subtle);
---link-color: var(--accent);
---link-hover-color: #4dffce;
-}
-}
-body{
-margin:0;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:20px;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-color:var(--fg);
-background:linear-gradient(-45deg,var(--bg) 25%,var(--sh1) 35%,var(--bg) 45%,var(--sh2) 55%,var(--bg) 65%);
-background-size:400% 400%;
-animation:shimmer 18s ease infinite;
-}
-@keyframes shimmer{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
-.ticket-container{
-width:100%;
-max-width:400px;
-background:var(--surface);
-border:1px solid var(--border);
-border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,.1);
-padding:24px;
-box-sizing:border-box;
-position:relative;
-overflow: hidden;
-}
-.logo-header-container {
-text-align:center;
-margin-bottom:20px;
-padding: 15px;
-border-radius: 15px;
-background-color: rgb(229 229 229);
-}
-.logo-header{
-width:160px;
-height:auto;
-display: block;
-margin: 0 auto;
-}
-.qr-btn{
-display:block;
-width:100%;
-padding:10px;
-border:1px solid var(--border);
-background:var(--subtle);
-border-radius:20px;
-cursor:pointer;
-font-size:1rem;
-color:var(--fg);
-margin-bottom:20px;
-}
-.page-qr {
-text-align: center;
-margin-bottom: 20px;
-background-color: var(--qr-container-bg);
-padding: 10px;
-border-radius: 12px;
-}
-.page-qr-image{
-width:220px;
-height:220px;
-border-radius:10px;
-margin:0 auto;
-display: block;
-cursor: pointer;
-object-fit: contain;
-transition: transform 0.2s ease;
-}
-.page-qr-image:hover {
-transform: scale(1.02);
-}
-.fullscreen-qr{
-position:fixed;
-inset:0;
-background:var(--surface);
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-z-index:999;
-animation:fadeIn .3s ease;
-padding: 20px;
-box-sizing: border-box;
-}
-.fullscreen-qr.hidden{display:none;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.close-qr{
-position:absolute;
-top:20px;
-right:20px;
-font-size:2rem;
-border:none;
-background:none;
-color:var(--fg);
-cursor:pointer;
-z-index: 10;
-}
-.qr-big{
-width:65vmin;
-height:65vmin;
-max-width: 400px;
-max-height: 400px;
-border-radius:12px;
-display: block;
-background-color: var(--qr-container-bg);
-object-fit: contain;
-padding: 10px;
-cursor: pointer;
-}
-.info-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
-margin-bottom:20px;
-}
-.info-item{
-display:flex;
-flex-direction:column;
-}
-.info-item .label{
-font-size:.75rem;
-opacity:.6;
-}
-.info-item .value{
-font-size:.9rem;
-font-weight:600;
-}
-.transport-strip{
-display:flex;
-align-items:center;
-overflow:hidden;
-position:relative;
-height:60px;
-margin-bottom:20px;
-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
--webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-}
-.transport-strip-inner {
-display: flex;
-animation: slide 20s linear infinite;
-}
-.transport-item {
-display: flex;
-flex-direction: column;
-align-items: center;
-margin: 0 12px;
-flex-shrink: 0;
-}
-.transport-item img{
-width:28px;
-height:28px;
-margin-bottom: 4px;
-}
-.transport-item span {
-font-size: 0.7rem;
-}
-@keyframes slide {
-0% { transform: translateX(0); }
-100% { transform: translateX(-50%); }
-}
-.details-section {
-margin-bottom: 20px;
-border-top:1px dashed var(--border);
-padding-top:16px;
-}
-.details-header {
-font-size: 0.9rem;
-font-weight: 600;
-margin-bottom: 8px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.toggle-details {
-background: none;
-border: none;
-color: var(--accent);
-cursor: pointer;
-font-size: 0.8rem;
-padding: 0;
-text-decoration: underline;
-}
-.details-content {
-font-size: .8rem;
-opacity: .7;
-max-height: 60px;
-overflow: hidden;
-position: relative;
-transition: max-height 0.3s ease;
-}
-.details-content.expanded {
-max-height: 1000px;
-}
-.details-content::after {
-content: '';
-position: absolute;
-bottom: 0;
-left: 0;
-right: 0;
-height: 30px;
-background: linear-gradient(to bottom, transparent, var(--surface));
-pointer-events: none;
-transition: opacity 0.3s ease;
-}
-.details-content.expanded::after {
-opacity: 0;
-}
-.details-links {
-margin-top: 10px;
-display: flex;
-flex-wrap: wrap;
-gap: 10px;
-justify-content: center;
-}
-.details-link {
-display: flex;
-align-items: center;
-gap: 5px;
-color: var(--link-color);
-text-decoration: none;
-font-size: 0.75rem;
-transition: color 0.2s ease;
-}
-.details-link:hover {
-color: var(--link-hover-color);
-text-decoration: underline;
-}
-.details-link svg {
-width: 16px;
-height: 16px;
-fill: currentColor;
-}
-.footer{
-font-size:.75rem;
-opacity:.7;
-text-align:center;
-border-top:1px dashed var(--border);
-padding-top:16px;
-margin-bottom: 5px;
-}
-.footer a {
-color:var(--accent);
-text-decoration:none;
-}
-.footer a:hover {
-text-decoration:underline;
-}
-
-.live-status-container {
-margin: 15px 0;
-padding: 10px;
-border-radius: 8px;
-background-color: var(--subtle);
-}
-.status-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 0.75rem;
-opacity: 0.9;
-margin-bottom: 8px;
-font-family: monospace;
-}
-.progress-bar-container {
-width: 100%;
-height: 6px;
-background-color: var(--border);
-border-radius: 3px;
-overflow: hidden;
-}
-.progress-bar {
-height: 100%;
-width: 100%;
-background-color: var(--accent);
-border-radius: 3px;
-animation: progress-countdown 60s linear infinite;
-}
-@keyframes progress-countdown {
-from { width: 100%; }
-to { width: 0%; }
-}
-
-.fullscreen-header, .fullscreen-footer {
-width: 100%;
-max-width: 500px;
-text-align: center;
-color: var(--fg);
-}
-.fullscreen-header {
-margin-bottom: 20px;
-}
-.fullscreen-footer {
-margin-top: 20px;
-display: flex;
-justify-content: space-around;
-gap: 15px;
-}
-.fs-info-item {
-margin-bottom: 10px;
-}
-.fs-label {
-display: block;
-font-size: 1rem;
-opacity: .7;
-margin-bottom: 4px;
-}
-.fs-value {
-display: block;
-font-size: 1.4rem;
-font-weight: 600;
-}
-
-.liveness-indicator {
-position: absolute;
-bottom: 0;
-left: 0;
-right: 0;
-height: 5px;
-background: linear-gradient(90deg, transparent, var(--accent), transparent);
-background-size: 200% 100%;
-animation: liveness-scan 3s linear infinite;
-}
-@keyframes liveness-scan {
-0% { background-position: 200% 0; }
-100% { background-position: -200% 0; }
-}
-
-/* Update Button Styles */
-.update-container {
-display: flex;
-flex-direction: column;
-gap: 10px;
-margin: 15px 0;
-}
-.update-btn {
-background: var(--accent);
-color: white;
-border: none;
-border-radius: 20px;
-padding: 10px 15px;
-font-size: 0.9rem;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.3s ease;
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 8px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.update-btn:hover {
-background: #006c4d;
-transform: translateY(-1px);
-box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-.update-btn:active {
-transform: translateY(0);
-}
-.update-btn svg {
-width: 18px;
-height: 18px;
-fill: white;
-}
-.status-indicator {
-display: flex;
-align-items: center;
-justify-content: space-between;
-font-size: 0.75rem;
-color: var(--fg);
-margin-top: 5px;
-padding: 5px 10px;
-background: var(--subtle);
-border-radius: 10px;
-}
-.status-spinner {
-display: inline-block;
-width: 12px;
-height: 12px;
-border: 2px solid rgba(var(--accent-rgb), 0.3);
-border-radius: 50%;
-border-top-color: var(--accent);
-animation: spin 1s linear infinite;
-margin-right: 8px;
-}
-@keyframes spin {
-to { transform: rotate(360deg); }
-}
-.status-success {
-color: #2e7d32;
-}
-.status-error {
-color: #c62828;
-}
-.last-updated {
-font-size: 0.7rem;
-opacity: 0.7;
-margin-top: 5px;
-text-align: center;
-}
-
-/* Transport Icons */
-.transport-icons {
-display: flex;
-justify-content: space-around;
-margin: 15px 0;
-padding: 10px;
-background: var(--subtle);
-border-radius: 12px;
-}
-.transport-icon {
-text-align: center;
-}
-.transport-icon img {
-width: 40px;
-height: 40px;
-margin-bottom: 5px;
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-.update-btn {
-box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-.update-btn:hover {
-box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVB - Deutschland-Ticket</title>
+    <link rel="icon" href="https://www.mvbnet.de//files/2017/01/logo.png" type="image/x-icon">
+    <style>
+        :root {
+            --bg: #e8f0ec;
+            --fg: #333;
+            --surface: #fff;
+            --border: #d0d0d0;
+            --subtle: #f0f4f2;
+            --accent: #008060;
+            --accent-rgb: 0, 128, 96;
+            --sh1: rgba(144, 238, 144, .25);
+            --sh2: rgba(144, 238, 144, .08);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0a1e16;
+                --fg: #e6e6e6;
+                --surface: #1e1e1e;
+                --border: #333;
+                --subtle: #2a2a2a;
+                --accent: #00e6a8;
+                --accent-rgb: 0, 230, 168;
+                --sh1: rgba(0, 230, 168, .08);
+                --sh2: rgba(0, 230, 168, .03);
+            }
+        }
+        
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--fg);
+            background: linear-gradient(-45deg, var(--bg) 25%, var(--sh1) 35%, var(--bg) 45%, var(--sh2) 55%, var(--bg) 65%);
+            background-size: 400% 400%;
+            animation: shimmer 18s ease infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+        
+        .ticket-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
+            padding: 24px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-header-container {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            background-color: var(--subtle);
+        }
+        
+        .logo-header {
+            width: 160px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .qr-image {
+            width: 220px;
+            height: 220px;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: block;
+            object-fit: contain;
+            background-color: var(--subtle);
+            padding: 10px;
+            transition: transform 0.2s ease;
+        }
+        
+        .qr-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .update-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .update-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .update-btn:hover {
+            background: #006c4d;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        
+        .update-btn:active {
+            transform: translateY(0);
+        }
+        
+        .update-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--fg);
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: var(--subtle);
+            border-radius: 12px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(var(--accent-rgb), 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .ticket-number {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: var(--accent);
+        }
+        
+        .ticket-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 8px;
+            margin: 20px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .footer {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-align: center;
+            border-top: 1px dashed var(--border);
+            padding-top: 16px;
+            margin-top: 15px;
+        }
+        
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .liveness-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            background-size: 200% 100%;
+            animation: liveness-scan 3s linear infinite;
+        }
+        
+        @keyframes liveness-scan {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
 </head>
-
 <body>
-<div class="ticket-container">
+    <div class="ticket-container">
+        <div class="logo-header-container">
+            <img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" class="logo-header">
+        </div>
+        
+        <div class="qr-section">
+            <img src="qr-code.png" alt="QR-Code" class="qr-image" id="qrImage">
+        </div>
+        
+        <div class="update-container">
+            <button class="update-btn" id="updateBtn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+                Ticket aktualisieren
+            </button>
+            <div class="status-indicator" id="statusIndicator">
+                <span>Letzte Aktualisierung: <span id="lastUpdatedTime">Wird geladen...</span></span>
+                <span id="statusIcon"></span>
+            </div>
+        </div>
+        
+        <div class="ticket-number" id="ticketNumber">Wird geladen...</div>
+        
+        <div class="ticket-details">
+            <div class="detail-item">
+                <span class="detail-label">
+                    <svg width="12" height="12" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18ZM11 6C11 5.44772 10.5523 5 10 5C9.44772 5 9 5.44772 9 6V10C9 10.2652 9.10536 10.5196 9.29289 10.7071L12.1213 13.5355C12.5118 13.9261 13.145 13.9261 13.5355 13.5355C13.9261 13.145 13.9261 12.5118 13.5355 12.1213L11 9.58579V6Z"/>
+                    </svg>
+                    Gültig von:
+                </span>
+                <span class="detail-value" id="validFrom">Wird geladen...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    Gültig bis:
+                </span>
+                <span class="detail-value" id="validUntil">Wird geladen...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    Ausgestellt:
+                </span>
+                <span class="detail-value" id="issuedAt">Wird geladen...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    Geltungsbereich:
+                </span>
+                <span class="detail-value" id="region">Wird geladen...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    Klasse:
+                </span>
+                <span class="detail-value" id="class">Wird geladen...</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <svg width="12" height="12" viewBox="0 0 20 20">
+                        <path d="M14 5.5C14 7.36384 12.7252 8.92994 11 9.37398V13C11 13.5523 10.5523 14 10 14C9.44771 14 9 13.5523 9 13V9.37398C7.27477 8.92994 6 7.36384 6 5.5C6 3.29086 7.79086 1.5 10 1.5C12.2091 1.5 14 3.29086 14 5.5Z"/>
+                        <path d="M1.5 14.5C1.5 12.7003 4.02566 11.1782 7.5 10.6758V13C7.5 14.3807 8.61929 15.5 10 15.5C11.3807 15.5 12.5 14.3807 12.5 13V10.6758C15.9743 11.1782 18.5 12.7003 18.5 14.5C18.5 16.7091 14.6944 18.5 10 18.5C5.30558 18.5 1.5 16.7091 1.5 14.5Z"/>
+                    </svg>
+                    Preisstufe:
+                </span>
+                <span class="detail-value" id="priceLevel">Wird geladen...</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer">MVB – Deutschland-Ticket</a>
+        </div>
+        
+        <div class="liveness-indicator"></div>
+    </div>
 
-<div class="logo-header-container">
-<img src="https://i.ibb.co/dskhJnVv/image.png" alt="Deutschland-Ticket Logo" class="logo-header">
-</div>
-
-<div class="page-qr">
-<img src="{{ ticket.qr_code_path }}" alt="QR-Code" class="page-qr-image" id="pageQR">
-</div>
-
-<div class="update-container">
-<button class="update-btn" id="forceUpdateBtn">
-<svg viewBox="0 0 24 24">
-<path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-</svg>
-Jetzt aktualisieren
-</button>
-<div class="status-indicator" id="statusIndicator">
-<span>Letzte Aktualisierung: <span id="lastUpdatedTime">{{ ticket.last_updated }}</span></span>
-<span id="statusIcon"></span>
-</div>
-</div>
-
-<div class="info-grid">
-<div class="info-item">
-<span class="label">Name</span>
-<span class="value" id="userName">{{ ticket.name }}</span>
-</div>
-<div class="info-item">
-<span class="label">Geburtsdatum</span>
-<span class="value" id="birthDate">{{ ticket.birthdate }}</span>
-</div>
-<div class="info-item">
-<span class="label">gültig ab</span>
-<span class="value" id="validFrom">{{ ticket.valid_from }}</span>
-</div>
-<div class="info-item">
-<span class="label">gültig bis</span>
-<span class="value" id="validTo">{{ ticket.valid_to }}</span>
-</div>
-<div class="info-item">
-<span class="label">Geltungsbereich</span>
-<span class="value">Deutschlandweit</span>
-</div>
-<div class="info-item">
-<span class="label">Ticket-Nr.</span>
-<span class="value" id="ticketNumber">{{ ticket.ticket_number }}</span>
-</div>
-</div>
-
-<div class="transport-strip">
-<div class="transport-strip-inner" id="transportStrip">
-<div class="transport-item">
-<img src="https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png" alt="Tram">
-<span>Tram</span>
-</div>
-<div class="transport-item">
-<img src="https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png" alt="Bus">
-<span>Bus</span>
-</div>
-<div class="transport-item">
-<img src="https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg" alt="Zug">
-<span>Zug</span>
-</div>
-<div class="transport-item">
-<img src="https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png" alt="U-Bahn">
-<span>U-Bahn</span>
-</div>
-<div class="transport-item">
-<img src="https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png" alt="Tram">
-<span>Tram</span>
-</div>
-<div class="transport-item">
-<img src="https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png" alt="Bus">
-<span>Bus</span>
-</div>
-<div class="transport-item">
-<img src="https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg" alt="Zug">
-<span>Zug</span>
-</div>
-<div class="transport-item">
-<img src="https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png" alt="U-Bahn">
-<span>U-Bahn</span>
-</div>
-</div>
-</div>
-
-<div class="details-section">
-<div class="details-header">
-<span>Details und Bedingungen</span>
-<button class="toggle-details" onclick="toggleDetails()">Mehr anzeigen</button>
-</div>
-<div class="details-content" id="detailsContent">
-Das Ticket verlängert sich automatisch jeden Monat bis zum Ende des aktuellen Semesters.<br>
-Verkauf erfolgte auf Rechnung Magdeburger Verkehrsbetriebe GmbH & Co. KG.<br>
-Es gelten die Beförderungsbedingungen der anerkennenden Verkehrsunternehmen und -verbünde sowie die Tarifbestimmungen des Deutschlandtickets.<br>
-<strong>Nicht übertragbar.</strong><br>
-Umtausch und Erstattung ausgeschlossen.<br>
-Kontrollmedium: gültiger amtlicher Lichtbildausweis.
-
-<div class="live-status-container">
-<div class="status-header">
-<span id="live-time"></span>
-<span id="countdown-text"></span>
-</div>
-<div class="progress-bar-container">
-<div class="progress-bar" id="progressBar"></div>
-</div>
-</div>
-
-<div class="details-links">
-<a href="https://mvb-verkehrsmelder.de/" target="_blank" rel="noopener noreferrer" class="details-link">
-<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-Verkehrsmelder
-</a>
-<a href="https://www.mvbnet.de/" target="_blank" rel="noopener noreferrer" class="details-link">
-<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-MVB Website
-</a>
-<a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer" class="details-link">
-<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-D-Ticket Info
-</a>
-</div>
-</div>
-</div>
-
-<div class="footer">
-<a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer">MVB – Deutschland-Ticket</a>
-<span class="last-updated">Status: <span id="updateStatus">{{ ticket.update_status }}</span></span>
-</div>
-
-<div class="liveness-indicator"></div>
-
-</div>
-
-<div class="fullscreen-qr hidden" id="qrFull">
-<button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
-<div style="text-align:center; margin-bottom:20px">
-<img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" style="height:40px">
-<div style="margin-top:10px; color:var(--accent); font-weight:500" id="fsCurrentTime"></div>
-</div>
-<div class="fullscreen-header">
-<div class="fs-info-item"><span class="fs-label">Name</span><span class="fs-value" id="fsUserName">{{ ticket.name }}</span></div>
-<div class="fs-info-item"><span class="fs-label">Geburtsdatum</span><span class="fs-value" id="fsBirthDate">{{ ticket.birthdate }}</span></div>
-</div>
-<img src="{{ ticket.qr_code_path }}" alt="QR-Code Vollbild" class="qr-big" id="fullScreenQR">
-<div class="fullscreen-footer">
-<div class="fs-info-item"><span class="fs-label">Gültig von</span><span class="fs-value" id="fsValidFrom">{{ ticket.valid_from.split(' ')[0] }}</span></div>
-<div class="fs-info-item"><span class="fs-label">Gültig bis</span><span class="fs-value" id="fsValidTo">{{ ticket.valid_to.split(' ')[0] }}</span></div>
-</div>
-<div style="position:absolute; bottom:20px; left:0; right:0; text-align:center">
-<a href="https://www.mvbnet.de/service/kontakte/" target="_blank" rel="noopener noreferrer" style="color:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-size:0.9rem">
-<svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-Problem mit dem Ticket?
-</a>
-</div>
-</div>
-
-<script>
-// DOM Elemente
-const forceUpdateBtn = document.getElementById('forceUpdateBtn');
-const statusIndicator = document.getElementById('statusIndicator');
-const statusIcon = document.getElementById('statusIcon');
-const lastUpdatedTime = document.getElementById('lastUpdatedTime');
-const updateStatus = document.getElementById('updateStatus');
-const pageQR = document.getElementById('pageQR');
-const fullScreenQR = document.getElementById('fullScreenQR');
-
-// Funktion zum Aktualisieren des UI-Status
-function updateUIStatus(status, success = null) {
-    updateStatus.textContent = status;
-    
-    // Status-Icon aktualisieren
-    statusIcon.innerHTML = '';
-    if (success === true) {
-        statusIcon.innerHTML = '<span class="status-success">✓</span>';
-    } else if (success === false) {
-        statusIcon.innerHTML = '<span class="status-error">✗</span>';
-    } else {
-        statusIcon.innerHTML = '<span class="status-spinner"></span>';
-    }
-}
-
-// Manuelles Update auslösen
-async function forceUpdate() {
-    forceUpdateBtn.disabled = true;
-    updateUIStatus('Aktualisierung wird gestartet...', null);
-    
-    try {
-        const response = await fetch('/api/force-update', {
-            method: 'POST'
+    <script>
+        // DOM элементы
+        const updateBtn = document.getElementById('updateBtn');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusIcon = document.getElementById('statusIcon');
+        const lastUpdatedTime = document.getElementById('lastUpdatedTime');
+        const qrImage = document.getElementById('qrImage');
+        
+        // Элементы данных билета
+        const ticketNumberEl = document.getElementById('ticketNumber');
+        const validFromEl = document.getElementById('validFrom');
+        const validUntilEl = document.getElementById('validUntil');
+        const issuedAtEl = document.getElementById('issuedAt');
+        const regionEl = document.getElementById('region');
+        const classEl = document.getElementById('class');
+        const priceLevelEl = document.getElementById('priceLevel');
+        
+        // Состояние загрузки
+        let isLoading = false;
+        
+        // Обновление статуса
+        function updateStatus(message, isError = false, showSpinner = false) {
+            statusIndicator.textContent = message;
+            statusIcon.innerHTML = '';
+            
+            if (showSpinner) {
+                statusIcon.innerHTML = '<div class="spinner"></div>';
+            } else if (!isError) {
+                // Показать зеленую галочку при успешном обновлении
+                statusIcon.innerHTML = '<span style="color:#2e7d32">✓</span>';
+            } else {
+                // Показать красный крест при ошибке
+                statusIcon.innerHTML = '<span style="color:#c62828">✗</span>';
+            }
+        }
+        
+        // Обновление данных билета с сервера
+        async function fetchTicketData() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            updateBtn.disabled = true;
+            updateStatus('Aktualisiere Ticket...', false, true);
+            
+            try {
+                // Имитация задержки для демонстрации индикатора загрузки
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Здесь должна быть реализована логика обновления данных
+                // В настоящем приложении здесь будет AJAX-запрос к серверу
+                console.log('Обновление данных билета...');
+                
+                // Имитация успешного ответа
+                const response = await fetch('/ticket_data.json?' + new Date().getTime());
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить данные билета');
+                }
+                
+                const ticketData = await response.json();
+                
+                // Обновление элементов страницы
+                ticketNumberEl.textContent = ticketData.ticket_number;
+                validFromEl.textContent = ticketData.valid_from;
+                validUntilEl.textContent = ticketData.valid_until;
+                regionEl.textContent = ticketData.region;
+                classEl.textContent = ticketData.class;
+                priceLevelEl.textContent = ticketData.price_level || 'deutschlandweit';
+                
+                // Вычисление времени выдачи (примерно за 3 минуты до текущего времени)
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - 3);
+                issuedAtEl.textContent = now.toLocaleString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).replace(',', '') + ' Uhr';
+                
+                // Обновление QR-кода с уникальным параметром для обхода кэша
+                const timestamp = new Date().getTime();
+                qrImage.src = `qr-code.png?t=${timestamp}`;
+                
+                // Обновление времени последней загрузки
+                lastUpdatedTime.textContent = ticketData.last_updated;
+                
+                // Обновление статуса
+                updateStatus('Ticket erfolgreich aktualisiert!', false, false);
+                console.log('Данные билета успешно обновлены');
+                
+            } catch (error) {
+                console.error('Ошибка при обновлении билета:', error);
+                updateStatus(`Fehler: ${error.message}`, true, false);
+            } finally {
+                isLoading = false;
+                updateBtn.disabled = false;
+                
+                // Скрыть индикатор через 3 секунды
+                setTimeout(() => {
+                    if (statusIcon.innerHTML.includes('✓') || statusIcon.innerHTML.includes('✗')) {
+                        statusIcon.innerHTML = '';
+                    }
+                }, 3000);
+            }
+        }
+        
+        // Автоматическое обновление каждые 5 минут
+        function setupAutoRefresh() {
+            setInterval(fetchTicketData, 5 * 60 * 1000);
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Загрузка данных билета
+            await fetchTicketData();
+            
+            // Настройка автоматического обновления
+            setupAutoRefresh();
+            
+            // Обработчик кнопки обновления
+            updateBtn.addEventListener('click', fetchTicketData);
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            // UI mit neuen Daten aktualisieren
-            document.getElementById('ticketNumber').textContent = data.ticket_data.ticket_number;
-            document.getElementById('userName').textContent = data.ticket_data.name;
-            document.getElementById('birthDate').textContent = data.ticket_data.birthdate;
-            document.getElementById('validFrom').textContent = data.ticket_data.valid_from;
-            document.getElementById('validTo').textContent = data.ticket_data.valid_to;
-            document.getElementById('fsUserName').textContent = data.ticket_data.name;
-            document.getElementById('fsBirthDate').textContent = data.ticket_data.birthdate;
-            document.getElementById('fsValidFrom').textContent = data.ticket_data.valid_from.split(' ')[0];
-            document.getElementById('fsValidTo').textContent = data.ticket_data.valid_to.split(' ')[0];
-            
-            // QR-Code mit Cache-Buster aktualisieren
-            const timestamp = new Date().getTime();
-            pageQR.src = data.ticket_data.qr_code_path + '?t=' + timestamp;
-            fullScreenQR.src = data.ticket_data.qr_code_path + '?t=' + timestamp;
-            
-            lastUpdatedTime.textContent = data.ticket_data.last_updated;
-            updateUIStatus('Aktualisierung erfolgreich!', true);
-        } else {
-            updateUIStatus('Fehler bei der Aktualisierung: ' + (data.message || 'Unbekannter Fehler'), false);
-        }
-    } catch (error) {
-        updateUIStatus('Netzwerkfehler: ' + error.message, false);
-        console.error('Fehler beim Abrufen der Daten:', error);
-    } finally {
-        forceUpdateBtn.disabled = false;
-        // Nach 5 Sekunden den Status-Icon zurücksetzen
-        setTimeout(() => {
-            if (statusIcon.querySelector('.status-success') || statusIcon.querySelector('.status-error')) {
-                statusIcon.innerHTML = '';
-            }
-        }, 5000);
-    }
-}
-
-// Automatische Aktualisierung alle 30 Sekunden
-function setupAutoRefresh() {
-    setInterval(async () => {
-        try {
-            const response = await fetch('/api/ticket-data');
-            if (!response.ok) throw new Error('Netzwerkantwort war nicht ok');
-            
-            const data = await response.json();
-            
-            // Nur aktualisieren, wenn sich die Daten geändert haben
-            if (data.ticket_number !== document.getElementById('ticketNumber').textContent) {
-                document.getElementById('ticketNumber').textContent = data.ticket_number;
-                lastUpdatedTime.textContent = data.last_updated;
-                updateStatus.textContent = data.update_status;
-                
-                // QR-Code nur aktualisieren, wenn sich der Pfad geändert hat
-                if (data.qr_code_path !== pageQR.src.split('?')[0]) {
-                    const timestamp = new Date().getTime();
-                    pageQR.src = data.qr_code_path + '?t=' + timestamp;
-                    fullScreenQR.src = data.qr_code_path + '?t=' + timestamp;
-                }
-            }
-        } catch (error) {
-            console.error('Fehler bei der automatischen Aktualisierung:', error);
-        }
-    }, 30000); // 30 Sekunden
-}
-
-// Funktion zum Umschalten des QR-Codes im Vollbildmodus
-function toggleQR() {
-    const qrElement = document.getElementById('qrFull');
-    qrElement.classList.toggle('hidden');
-    document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
-    updateCurrentTime();
-}
-
-// Funktion zum Aktualisieren der aktuellen Zeit
-function updateCurrentTime() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('de-DE', { 
-        hour: '2-digit', 
-        minute: '2-digit'
-    });
-    document.getElementById('fsCurrentTime').textContent = timeString;
-    
-    // Live-Status aktualisieren
-    const liveTime = document.getElementById('live-time');
-    if (liveTime) {
-        liveTime.textContent = `Stand: ${now.toLocaleString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        })}`;
-    }
-    
-    // Countdown aktualisieren (60 Sekunden)
-    const countdown = document.getElementById('countdown-text');
-    if (countdown) {
-        const secondsRemaining = 60 - (now.getSeconds() % 60);
-        countdown.textContent = `Nächste Aktualisierung in ${secondsRemaining}s`;
-    }
-    
-    // Für die nächste Sekunde planen
-    setTimeout(updateCurrentTime, 1000);
-}
-
-// Funktion zum Umschalten der Details
-function toggleDetails() {
-    const detailsContent = document.getElementById('detailsContent');
-    const button = document.querySelector('.toggle-details');
-    detailsContent.classList.toggle('expanded');
-    button.textContent = detailsContent.classList.contains('expanded') ? 'Weniger anzeigen' : 'Mehr anzeigen';
-}
-
-// Event Listener hinzufügen
-document.addEventListener('DOMContentLoaded', () => {
-    // Klick-Handler für die Update-Schaltfläche
-    forceUpdateBtn.addEventListener('click', forceUpdate);
-    
-    // Klick-Handler für den QR-Code
-    pageQR.addEventListener('click', toggleQR);
-    
-    // Automatische Aktualisierung einrichten
-    setupAutoRefresh();
-    
-    // Aktuelle Zeit starten
-    updateCurrentTime();
-    
-    // Initiale Status-Anzeige
-    updateUIStatus('{{ ticket.update_status }}', null);
-});
-
-// Fallback für das QR-Code-Bild
-pageQR.onerror = function() {
-    this.src = '/static/placeholder_qr.png';
-};
-fullScreenQR.onerror = function() {
-    this.src = '/static/placeholder_qr.png';
-};
-</script>
-
+        // Обработка ошибок загрузки изображения QR-кода
+        qrImage.onerror = function() {
+            console.error('Ошибка загрузки QR-кода');
+            this.src = 'static/placeholder_qr.png';
+        };
+    </script>
 </body>
 </html>
