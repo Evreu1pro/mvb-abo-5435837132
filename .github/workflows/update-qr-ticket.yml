@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-ticket-data:
+  update-ticket:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -60,7 +60,7 @@ with open('ticket_data.json', 'w', encoding='utf-8') as f:
 
       - name: Обновить HTML-файл
         run: |
-          python -c "
+          python - <<'PY'
 import json
 from bs4 import BeautifulSoup
 
@@ -89,7 +89,7 @@ with open('index.html', 'w', encoding='utf-8') as f:
     f.write(str(soup))
 
 print('index.html обновлён.')
-          "
+PY
 
       - name: Закоммитить и запушить
         uses: stefanzweifel/git-auto-commit-action@v5
