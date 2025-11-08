@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVB</title>
+<link rel="icon" href="https://external-content.duckduckgo.com/ip3/www.mvbnet.de.ico" type="image/x-icon">
+
+<style>
+:root{
+--bg:#e8f0ec;
+--fg:#333;
+--surface:#fff;
+--border:#d0d0d0;
+--subtle:#f0f4f2;
+--accent:#008060;
+--accent-rgb: 0, 128, 96;
+--sh1:rgba(144, 238, 144, .25);
+--sh2:rgba(144, 238, 144, .08);
+--logo-container-bg: rgba(255, 255, 255, 0.7);
+--qr-container-bg: var(--subtle);
+--link-color: var(--accent);
+--link-hover-color: #005a44;
+}
+@media (prefers-color-scheme: dark){
+:root{
+--bg:#0a1e16;
+--fg:#e6e6e6;
+--surface:#1e1e1e;
+--border:#333;
+--subtle:#2a2a2a;
+--accent:#00e6a8;
+--accent-rgb: 0, 230, 168;
+--sh1:rgba(0, 230, 168, .08);
+--sh2:rgba(0, 230, 168, .03);
+--logo-container-bg: rgba(0, 0, 0, 0.3);
+--qr-container-bg: var(--subtle);
+--link-color: var(--accent);
+--link-hover-color: #4dffce;
+}
+}
+body{
+margin:0;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+color:var(--fg);
+background:linear-gradient(-45deg,var(--bg) 25%,var(--sh1) 35%,var(--bg) 45%,var(--sh2) 55%,var(--bg) 65%);
+background-size:400% 400%;
+animation:shimmer 18s ease infinite;
+}
+@keyframes shimmer{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+.ticket-container{
+width:100%;
+max-width:400px;
+background:var(--surface);
+border:1px solid var(--border);
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.1);
+padding:24px;
+box-sizing:border-box;
+position:relative;
+overflow: hidden;
+}
+.logo-header-container {
+text-align:center;
+margin-bottom:20px;
+padding: 15px;
+border-radius: 15px;
+background-color: rgb(229 229 229);
+}
+.logo-header{
+width:160px;
+height:auto;
+display: block;
+margin: 0 auto;
+}
+.qr-btn{
+display:block;
+width:100%;
+padding:10px;
+border:1px solid var(--border);
+background:var(--subtle);
+border-radius:20px;
+cursor:pointer;
+font-size:1rem;
+color:var(--fg);
+margin-bottom:20px;
+}
+.page-qr {
+text-align: center;
+margin-bottom: 20px;
+background-color: var(--qr-container-bg);
+padding: 10px;
+border-radius: 12px;
+}
+.page-qr-image{
+width:220px;
+height:220px;
+border-radius:10px;
+margin:0 auto;
+display: block;
+cursor: pointer;
+object-fit: contain;
+transition: transform 0.2s ease;
+}
+.page-qr-image:hover {
+transform: scale(1.02);
+}
+.fullscreen-qr{
+position:fixed;
+inset:0;
+background:var(--surface);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+z-index:999;
+animation:fadeIn .3s ease;
+padding: 20px;
+box-sizing: border-box;
+}
+.fullscreen-qr.hidden{display:none;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.close-qr{
+position:absolute;
+top:20px;
+right:20px;
+font-size:2rem;
+border:none;
+background:none;
+color:var(--fg);
+cursor:pointer;
+z-index: 10;
+}
+.qr-big{
+width:65vmin;
+height:65vmin;
+max-width: 400px;
+max-height: 400px;
+border-radius:12px;
+display: block;
+background-color: var(--qr-container-bg);
+object-fit: contain;
+padding: 10px;
+cursor: pointer;
+}
+.info-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-bottom:20px;
+}
+.info-item{
+display:flex;
+flex-direction:column;
+}
+.info-item .label{
+font-size:.75rem;
+opacity:.6;
+}
+.info-item .value{
+font-size:.9rem;
+font-weight:600;
+}
+.transport-strip{
+display:flex;
+align-items:center;
+overflow:hidden;
+position:relative;
+height:60px;
+margin-bottom:20px;
+mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+-webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.transport-strip-inner {
+display: flex;
+animation: slide 20s linear infinite;
+}
+.transport-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+margin: 0 12px;
+flex-shrink: 0;
+}
+.transport-item img{
+width:28px;
+height:28px;
+margin-bottom: 4px;
+}
+.transport-item span {
+font-size: 0.7rem;
+}
+@keyframes slide {
+0% { transform: translateX(0); }
+100% { transform: translateX(-50%); }
+}
+.details-section {
+margin-bottom: 20px;
+border-top: 1px dashed var(--border);
+padding-top: 16px;
+}
+.details-header {
+font-size: 0.9rem;
+font-weight: 600;
+margin-bottom: 8px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.toggle-details {
+background: none;
+border: none;
+color: var(--accent);
+cursor: pointer;
+font-size: 0.8rem;
+padding: 0;
+text-decoration: underline;
+}
+.details-content {
+font-size: .8rem;
+opacity: .7;
+max-height: 60px;
+overflow: hidden;
+position: relative;
+transition: max-height 0.3s ease;
+}
+.details-content.expanded {
+max-height: 1000px;
+}
+.details-content::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 30px;
+background: linear-gradient(to bottom, transparent, var(--surface));
+pointer-events: none;
+transition: opacity 0.3s ease;
+}
+.details-content.expanded::after {
+opacity: 0;
+}
+.details-links {
+margin-top: 10px;
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+justify-content: center;
+}
+.details-link {
+display: flex;
+align-items: center;
+gap: 5px;
+color: var(--link-color);
+text-decoration: none;
+font-size: 0.75rem;
+transition: color 0.2s ease;
+}
+.details-link:hover {
+color: var(--link-hover-color);
+text-decoration: underline;
+}
+.details-link svg {
+width: 16px;
+height: 16px;
+fill: currentColor;
+}
+.footer{
+font-size:.75rem;
+opacity:.7;
+text-align:center;
+border-top:1px dashed var(--border);
+padding-top:16px;
+margin-bottom: 5px;
+}
+.footer a {
+color:var(--accent);
+text-decoration:none;
+}
+.footer a:hover {
+text-decoration:underline;
+}
+
+.live-status-container {
+margin: 15px 0;
+padding: 10px;
+border-radius: 8px;
+background-color: var(--subtle);
+}
+.status-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 0.75rem;
+opacity: 0.9;
+margin-bottom: 8px;
+font-family: monospace;
+}
+.progress-bar-container {
+width: 100%;
+height: 6px;
+background-color: var(--border);
+border-radius: 3px;
+overflow: hidden;
+}
+.progress-bar {
+height: 100%;
+width: 100%;
+background-color: var(--accent);
+border-radius: 3px;
+animation: progress-countdown 60s linear infinite;
+}
+@keyframes progress-countdown {
+from { width: 100%; }
+to { width: 0%; }
+}
+
+.fullscreen-header, .fullscreen-footer {
+width: 100%;
+max-width: 500px;
+text-align: center;
+color: var(--fg);
+}
+.fullscreen-header {
+margin-bottom: 20px;
+}
+.fullscreen-footer {
+margin-top: 20px;
+display: flex;
+justify-content: space-around;
+gap: 15px;
+}
+.fs-info-item {
+margin-bottom: 10px;
+}
+.fs-label {
+display: block;
+font-size: 1rem;
+opacity: .7;
+margin-bottom: 4px;
+}
+.fs-value {
+display: block;
+font-size: 1.4rem;
+font-weight: 600;
+}
+
+.liveness-indicator {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 5px;
+background: linear-gradient(90deg, transparent, var(--accent), transparent);
+background-size: 200% 100%;
+animation: liveness-scan 3s linear infinite;
+}
+@keyframes liveness-scan {
+0% { background-position: 200% 0; }
+100% { background-position: -200% 0; }
+}
+
+.fs-status-indicator {
+position: absolute;
+top: 25px;
+left: 25px;
+background: var(--subtle);
+color: var(--fg);
+padding: 8px 12px;
+border-radius: 20px;
+font-size: 0.9rem;
+font-weight: 500;
+display: flex;
+align-items: center;
+gap: 12px;
+border: 1px solid var(--border);
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.fs-status-dot {
+width: 10px;
+height: 10px;
+background-color: var(--accent);
+border-radius: 50%;
+animation: pulse 2s infinite;
+}
+@keyframes pulse {
+0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.7); }
+70% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0); }
+100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+
+.fs-status-logo {
+height: 20px;
+width: auto;
+filter: brightness(0) invert(0);
+}
+
+.fs-current-time {
+font-size: 0.85rem;
+font-weight: 500;
+color: var(--fg);
+background: rgba(var(--accent-rgb), 0.1);
+padding: 4px 8px;
+border-radius: 12px;
+border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.fs-support-link {
+position: absolute;
+bottom: 25px;
+left: 50%;
+transform: translateX(-50%);
+text-align: center;
+font-size: 0.9rem;
+}
+
+.fs-support-link a {
+color: var(--accent);
+text-decoration: none;
+display: flex;
+align-items: center;
+gap: 6px;
+justify-content: center;
+}
+
+.fs-support-link a:hover {
+text-decoration: underline;
+color: var(--link-hover-color);
+}
+
+.fs-support-link svg {
+width: 16px;
+height: 16px;
+fill: currentColor;
+}
+
+/* --- NEW STYLES FOR SUPER ZOOM --- */
+.super-zoom-qr {
+position: fixed;
+inset: 0;
+background: var(--surface);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 1000; /* Higher than the normal fullscreen */
+animation: fadeIn .2s ease;
+padding: 20px;
+box-sizing: border-box;
+}
+.super-zoom-qr.hidden {
+display: none;
+}
+.qr-super-zoom-image {
+width: 90vmin;
+height: 90vmin;
+max-width: 600px;
+max-height: 600px;
+object-fit: contain;
+}
+.close-super-zoom {
+margin-top: 20px;
+padding: 12px 24px;
+font-size: 1.1rem;
+color: var(--fg);
+background: var(--subtle);
+border: 1px solid var(--border);
+border-radius: 25px;
+cursor: pointer;
+transition: background-color 0.2s;
+}
+.close-super-zoom:hover {
+background-color: var(--border);
+}
+/* --- END OF NEW STYLES --- */
+
+
+@media (prefers-color-scheme: dark) {
+.fs-status-logo {
+filter: brightness(0) invert(1);
+}
+}
+</style>
+</head>
+
+<body>
+<div class="ticket-container">
+
+<div class="logo-header-container">
+<img src="https://i.ibb.co/dskhJnVv/image.png" alt="Deutschland-Ticket Logo" class="logo-header">
+</div>
+
+<div class="page-qr">
+<img src="image_2025-09-03_15-42-07.png" alt="QR-Code" class="page-qr-image" id="pageQR">
+</div>
+
+<button class="qr-btn" onclick="toggleQR()">QR-Code auf Vollbild anzeigen</button>
+
+<div class="info-grid">
+<div class="info-item">
+<span class="label">Name</span>
+<span class="value">Yehor Antoniuk</span>
+</div>
+<div class="info-item">
+<span class="label">Geburtsdatum</span>
+<span class="value">31.05.2004</span>
+</div>
+<div class="info-item">
+<span class="label">gültig ab</span>
+<span class="value" id="validFrom">01.08.2025 00:00</span>
+</div>
+<div class="info-item">
+<span class="label">gültig bis</span>
+<span class="value" id="validTo">01.09.2025 03:00</span>
+</div>
+<div class="info-item">
+<span class="label">Geltungsbereich</span>
+<span class="value">Deutschlandweit</span>
+</div>
+</div>
+
+<div class="transport-strip">
+<div class="transport-strip-inner" id="transportStrip">
+</div>
+</div>
+
+<div class="details-section">
+<div class="details-header">
+<span>Details und Bedingungen</span>
+<button class="toggle-details" onclick="toggleDetails()">Mehr anzeigen</button>
+</div>
+<div class="details-content" id="detailsContent">
+Das Ticket verlängert sich automatisch jeden Monat bis zum Ende des aktuellen Semesters.<br>
+Verkauf erfolgte auf Rechnung Magdeburger Verkehrsbetriebe GmbH & Co. KG.<br>
+Es gelten die Beförderungsbedingungen der anerkennenden Verkehrsunternehmen und -verbünde sowie die Tarifbestimmungen des Deutschlandtickets.<br>
+<strong>Nicht übertragbar.</strong><br>
+Umtausch und Erstattung ausgeschlossen.<br>
+Kontrollmedium: gültiger amtlicher Lichtbildausweis.
+
+<div class="live-status-container">
+<div class="status-header">
+<span id="live-time"></span>
+<span id="countdown-text"></span>
+</div>
+<div class="progress-bar-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+</div>
+
+<div class="details-links">
+<a href="https://mvb-verkehrsmelder.de/" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+Verkehrsmelder
+</a>
+<a href="https://www.mvbnet.de/" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+MVB Website
+</a>
+<a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+D-Ticket Info
+</a>
+<a href="https://www.facebook.com/mvbgmbh" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12z"/></svg>
+Facebook
+</a>
+<a href="https://www.instagram.com/magdeburgerverkehrsbetriebe/" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.280.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+Instagram
+</a>
+<a href="https://www.youtube.com/channel/UCmPLynuKFEBAk7IkfuQ0Upw" target="_blank" rel="noopener noreferrer" class="details-link">
+<svg viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+YouTube
+</a>
+</div>
+</div>
+</div>
+
+<div class="footer">
+<a href="https://www.mvbnet.de/fahrkarten/deutschlandticket/" target="_blank" rel="noopener noreferrer">MVB – Deutschland-Ticket</a>
+</div>
+
+<div class="liveness-indicator"></div>
+
+</div>
+
+<script>
+const transportItems = [
+{ src: 'https://cdn.pixabay.com/photo/2012/04/24/12/45/transportation-39869_1280.png', label: 'Tram' },
+{ src: 'https://wiki.openstreetmap.org/w/images/thumb/8/83/BUS-Logo-BVG.svg/480px-BUS-Logo-BVG.svg.png', label: 'Bus' },
+{ src: 'https://www.nasa.de/typo3conf/ext/zs_frontend/Resources/Public/frontend-ui/dist/images/icon-zug.svg', label: 'Zug' },
+{ src: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/U-Bahn_Berlin_logo.png', label: 'U-Bahn' }
+];
+
+// Funktion zur Berechnung der automatischen Verlängerung
+function calculateAutoRenewalDates() {
+const now = new Date();
+const currentYear = now.getFullYear();
+const currentMonth = now.getMonth();
+
+const startDate = new Date(currentYear, currentMonth, 1);
+const endDate = new Date(currentYear, currentMonth + 1, 1, 3, 0, 0);
+
+return { start: startDate, end: endDate };
+}
+
+// Funktion zum Formatieren des Datums
+function formatDate(date, includeTime = false) {
+const day = String(date.getDate()).padStart(2, '0');
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const year = date.getFullYear();
+
+if (includeTime) {
+const hours = String(date.getHours()).padStart(2, '0');
+const minutes = String(date.getMinutes()).padStart(2, '0');
+return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+return `${day}.${month}.${year}`;
+}
+
+// Funktion zum Formatieren der aktuellen Zeit für den Vollbildmodus
+function formatCurrentTime() {
+const now = new Date();
+const hours = String(now.getHours()).padStart(2, '0');
+const minutes = String(now.getMinutes()).padStart(2, '0');
+return `${hours}:${minutes}`;
+}
+
+// Aktualisiere die Datumsanzeigen
+function updateDateDisplays() {
+const dates = calculateAutoRenewalDates();
+
+document.getElementById('validFrom').textContent = formatDate(dates.start, true);
+document.getElementById('validTo').textContent = formatDate(dates.end, true);
+
+const fsValidFrom = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(1) .fs-value');
+const fsValidTo = document.querySelector('.fullscreen-footer .fs-info-item:nth-child(2) .fs-value');
+
+if (fsValidFrom) fsValidFrom.textContent = formatDate(dates.start);
+if (fsValidTo) fsValidTo.textContent = formatDate(dates.end);
+}
+
+// Aktualisiere die aktuelle Zeit im Vollbildmodus
+function updateFullscreenTime() {
+const timeElement = document.getElementById('fsCurrentTime');
+if (timeElement) {
+timeElement.textContent = formatCurrentTime();
+}
+}
+
+// --- HTML TEMPLATES FOR OVERLAYS ---
+const qrHtml = `
+<div class="fullscreen-qr hidden" id="qrFull">
+<div class="fs-status-indicator">
+<img src="https://www.mvbnet.de//files/2017/01/logo.png" alt="MVB Logo" class="fs-status-logo">
+<span class="fs-current-time" id="fsCurrentTime">${formatCurrentTime()}</span>
+</div>
+<button class="close-qr" onclick="toggleQR()" aria-label="QR-Code schließen">&times;</button>
+<div class="fullscreen-header">
+<div class="fs-info-item"><span class="fs-label">Name</span><span class="fs-value">Yehor Antoniuk</span></div>
+<div class="fs-info-item"><span class="fs-label">Geburtsdatum</span><span class="fs-value">31.05.2004</span></div>
+</div>
+<img src="image_2025-09-03_15-42-07.png" alt="QR-Code Vollbild" class="qr-big" id="fullScreenQR">
+<div class="fullscreen-footer">
+<div class="fs-info-item"><span class="fs-label">Gültig von</span><span class="fs-value">01.08.2025</span></div>
+<div class="fs-info-item"><span class="fs-label">Gültig bis</span><span class="fs-value">01.09.2025</span></div>
+</div>
+<div class="fs-support-link">
+<a href="https://www.mvbnet.de/service/kontakte/" target="_blank" rel="noopener noreferrer">
+<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+Problem mit dem Ticket?
+</a>
+</div>
+</div>`;
+
+const superZoomHtml = `
+<div class="super-zoom-qr hidden" id="qrSuperZoom">
+<img src="image_2025-09-03_15-42-07.png" alt="QR-Code Super Zoom" class="qr-super-zoom-image">
+<button class="close-super-zoom" onclick="closeSuperZoom()">Zurück</button>
+</div>`;
+
+document.body.insertAdjacentHTML('beforeend', qrHtml);
+document.body.insertAdjacentHTML('beforeend', superZoomHtml);
+
+
+function initTransportStrip() {
+const stripInner = document.getElementById('transportStrip');
+if (!stripInner) return;
+stripInner.innerHTML = '';
+for (let i = 0; i < 2; i++) {
+transportItems.forEach(item => {
+const transportItem = document.createElement('div');
+transportItem.className = 'transport-item';
+const img = document.createElement('img');
+img.src = item.src; img.alt = item.label;
+const span = document.createElement('span');
+span.textContent = item.label;
+transportItem.appendChild(img);
+transportItem.appendChild(span);
+stripInner.appendChild(transportItem);
+});
+}
+}
+
+// --- FUNCTIONS TO CONTROL OVERLAYS ---
+function toggleQR() {
+const qrElement = document.getElementById('qrFull');
+qrElement.classList.toggle('hidden');
+document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
+if (!qrElement.classList.contains('hidden')) {
+updateFullscreenTime();
+}
+}
+
+function openSuperZoom() {
+document.getElementById('qrFull').classList.add('hidden');
+document.getElementById('qrSuperZoom').classList.remove('hidden');
+}
+
+function closeSuperZoom() {
+document.getElementById('qrSuperZoom').classList.add('hidden');
+document.getElementById('qrFull').classList.remove('hidden');
+}
+
+
+function toggleDetails() {
+const detailsContent = document.getElementById('detailsContent');
+const button = document.querySelector('.toggle-details');
+detailsContent.classList.toggle('expanded');
+button.textContent = detailsContent.classList.contains('expanded') ? 'Weniger anzeigen' : 'Mehr anzeigen';
+}
+
+function initLiveStatus() {
+const timeElement = document.getElementById('live-time');
+const countdownElement = document.getElementById('countdown-text');
+const countdownDuration = 60;
+if (!timeElement || !countdownElement) return;
+
+const dateTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+timeZone: 'Europe/Berlin',
+year: 'numeric', month: '2-digit', day: '2-digit',
+hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+});
+
+setInterval(() => {
+const now = new Date();
+timeElement.textContent = `Stand: ${dateTimeFormatter.format(now)}`;
+const secondsRemaining = countdownDuration - (Math.floor(now.getTime() / 1000) % countdownDuration);
+countdownElement.textContent = `Nächste in ${secondsRemaining}s`;
+if (!document.getElementById('qrFull').classList.contains('hidden')) {
+updateFullscreenTime();
+}
+}, 1000);
+}
+
+function setupMonthlyDateCheck() {
+updateDateDisplays();
+setInterval(updateDateDisplays, 24 * 60 * 60 * 1000);
+}
+
+// --- SMART EVENT LISTENER FOR SHORT/LONG PRESS ---
+function addSmartEventListener(element, callback) {
+let timerId;
+let isLongPress = false;
+
+function pressStart(event) {
+event.preventDefault();
+isLongPress = false;
+timerId = setTimeout(() => {
+isLongPress = true;
+if (callback.long) callback.long();
+}, 500); // 500ms threshold for long press
+}
+
+function pressEnd(event) {
+clearTimeout(timerId);
+if (!isLongPress && callback.short) {
+callback.short();
+}
+}
+// Mouse events
+element.addEventListener('mousedown', pressStart);
+element.addEventListener('mouseup', pressEnd);
+element.addEventListener('mouseleave', () => clearTimeout(timerId));
+// Touch events
+element.addEventListener('touchstart', pressStart);
+element.addEventListener('touchend', pressEnd);
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+initTransportStrip();
+initLiveStatus();
+setupMonthlyDateCheck();
+
+const pageQRImage = document.getElementById('pageQR');
+if (pageQRImage) {
+pageQRImage.addEventListener('click', toggleQR);
+}
+
+const fullScreenQR = document.getElementById('fullScreenQR');
+if (fullScreenQR) {
+addSmartEventListener(fullScreenQR, {
+short: toggleQR, // Function for short press (click)
+long: openSuperZoom // Function for long press
+});
+}
+});
+</script>
+
+</body>
+</html>
