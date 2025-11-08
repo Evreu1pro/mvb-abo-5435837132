@@ -1,48 +1,78 @@
 # .github/workflows/update-qr-ticket.yml
 name: Обновить QR-код и ID билета
 
-# Запускать по расписанию: в 5:00 и 3:00 UTC каждый день
 on:
   schedule:
-    - cron: '0 5,3 * * *'
+    - cron: '0 3,15 * * *' # 5:00 и 17:00 по центральноевропейскому времени
   workflow_dispatch:
+    inputs:
+      force-update:
+        description: 'Принудительно обновить билет'
+        required: false
+        default: 'false'
 
 jobs:
   update-ticket-data:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Дать разрешение на запись в репозиторий
+      contents: write
+      actions: read
 
     steps:
-      # Шаг 1: Клонируем репозиторий
       - name: Клонировать репозиторий
         uses: actions/checkout@v4
+        
+      - name: Настроить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-      # Шаг 2: Устанавливаем Python и необходимые библиотеки
-      - name: Установить Python и зависимости
+      - name: Установить зависимости
         run: |
-          python -m pip install requests beautifulsoup4
-
-      # Шаг 3: Запускаем Python-скрипт для извлечения данных
+          pip install requests beautifulsoup4
+          
       - name: Извлечь данные билета
-        run: python update_ticket.py
-
-      # Шаг 4: Читаем номер билета из временного файла и обновляем index.html
-      - name: Обновить номер билета в index.html
+        id: fetch_ticket
         run: |
-          # Читаем новый номер билета
+          python update_ticket.py
+          echo "STATUS=success" >> $GITHUB_OUTPUT
+        continue-on-error: true # Продолжить выполнение даже при ошибке
+      
+      - name: Проверить успешность обновления
+        if: steps.fetch_ticket.outputs.STATUS != 'success'
+        run: |
+          echo "Не удалось обновить билет. Пропускаем коммит."
+          exit 0
+
+      - name: Проверить изменения в файлах
+        id: check_changes
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "CHANGES_DETECTED=true" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGES_DETECTED=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Обновить номер билета в index.html
+        if: steps.check_changes.outputs.CHANGES_DETECTED == 'true'
+        run: |
           NEW_TICKET_NUMBER=$(cat ticket_number.txt)
           echo "Новый номер билета для вставки: $NEW_TICKET_NUMBER"
-          
-          # Используем sed для замены старого номера на новый
-          # Ищем строку <span class="value" id="ticketNumber">...</span> и заменяем ее
-          sed -i "s|<span class=\"value\" id=\"ticketNumber\">.*</span>|<span class=\"value\" id=\"ticketNumber\">${NEW_TICKET_NUMBER}</span>|g" index.html
+          sed -i "s|<span class=\"value\" id=\"ticketNumber\">[^<]*</span>|<span class=\"value\" id=\"ticketNumber\">${NEW_TICKET_NUMBER}</span>|g" index.html
           echo "index.html обновлен."
 
-      # Шаг 5: Сохраняем и отправляем изменения в репозиторий
+      - name: Удалить временный файл
+        run: rm -f ticket_number.txt
+
       - name: Сохранить и запушить изменения
+        if: steps.check_changes.outputs.CHANGES_DETECTED == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Автообновление: QR-код и ID билета"
-          branch: main # Укажите вашу основную ветку
-          file_pattern: 'qr-code.png index.html' # Обновляем оба файла
+          commit_message: "Автообновление: QR-код и ID билета $(date '+%d.%m.%Y %H:%M')"
+          branch: main
+          file_pattern: |
+            qr-code.png
+            index.html
+          commit_options: '--no-verify'
+          push_options: '--no-verify'
