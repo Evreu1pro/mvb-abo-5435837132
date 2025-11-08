@@ -1,118 +1,68 @@
-name: Обновить QR-код и данные билета
+- name: Обновить номер билета в index.html
+  run: |
+    # Проверяем существование файла ticket_data.json
+    if [ ! -f "ticket_data.json" ]; then
+      echo "Файл ticket_data.json не существует. Создаем резервные данные."
+      python -c "
+import json
+from datetime import datetime
+backup_data = {
+    'ticket_number': 'BACKUP-987654',
+    'valid_from': '01.11.2025 - 00:00',
+    'valid_until': '01.12.2025 - 03:00',
+    'region': 'Deutschlandweit',
+    'class': '2. Klasse',
+    'price_level': 'deutschlandweit',
+    'last_updated': datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+}
+with open('ticket_data.json', 'w') as f:
+    json.dump(backup_data, f, ensure_ascii=False, indent=2)
+      "
+    fi
+    
+    # Обновляем HTML
+    python -c "
+import json
+from bs4 import BeautifulSoup
 
-on:
-  schedule:
-    - cron: '0 3,15 * * *'  # Ежедневно в 3:00 и 15:00 UTC (5:00 и 17:00 CET)
-  workflow_dispatch:
-    inputs:
-      force-update:
-        description: 'Принудительно обновить билет'
-        required: false
-        default: 'false'
+# Читаем данные билета
+with open('ticket_data.json', 'r') as f:
+    ticket_data = json.load(f)
 
-jobs:
-  update-ticket-data:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: read
+# Читаем содержимое index.html
+with open('index.html', 'r', encoding='utf-8') as f:
+    html_content = f.read()
 
-    steps:
-      - name: Клонировать репозиторий
-        uses: actions/checkout@v4
-        
-      - name: Настроить Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+# Обновляем данные в HTML
+soup = BeautifulSoup(html_content, 'html.parser')
 
-      - name: Установить зависимости
-        run: |
-          pip install requests beautifulsoup4
+# Обновляем номер билета
+ticket_number_el = soup.find(id='ticketNumber')
+if ticket_number_el:
+    ticket_number_el.string = ticket_data['ticket_number']
 
-      - name: Извлечь данные билета
-        id: fetch_ticket
-        run: |
-          python update_ticket.py
-          echo "STATUS=success" >> $GITHUB_OUTPUT
-        continue-on-error: true
+# Обновляем остальные данные
+elements = {
+    'validFrom': 'valid_from',
+    'validUntil': 'valid_until',
+    'region': 'region',
+    'class': 'class',
+    'priceLevel': 'price_level'
+}
 
-      - name: Проверить успешность обновления
-        if: steps.fetch_ticket.outputs.STATUS != 'success'
-        run: |
-          echo "Не удалось обновить билет. Пропускаем коммит."
-          exit 0
+for html_id, data_key in elements.items():
+    el = soup.find(id=html_id)
+    if el and data_key in ticket_data:
+        el.string = ticket_data[data_key]
 
-      - name: Обновить номер билета в index.html
-        run: |
-          # Читаем данные билета из JSON
-          import json
-          with open('ticket_data.json', 'r') as f:
-              ticket_data = json.load(f)
-          
-          # Читаем содержимое index.html
-          with open('index.html', 'r') as f:
-              html_content = f.read()
-          
-          # Заменяем номер билета
-          from bs4 import BeautifulSoup
-          soup = BeautifulSoup(html_content, 'html.parser')
-          ticket_number_el = soup.find(id='ticketNumber')
-          if ticket_number_el:
-              ticket_number_el.string = ticket_data['ticket_number']
-          
-          # Заменяем остальные данные
-          valid_from_el = soup.find(id='validFrom')
-          if valid_from_el:
-              valid_from_el.string = ticket_data['valid_from']
-          
-          valid_until_el = soup.find(id='validUntil')
-          if valid_until_el:
-              valid_until_el.string = ticket_data['valid_until']
-          
-          region_el = soup.find(id='region')
-          if region_el:
-              region_el.string = ticket_data['region']
-          
-          class_el = soup.find(id='class')
-          if class_el:
-              class_el.string = ticket_data['class']
-          
-          price_level_el = soup.find(id='priceLevel')
-          if price_level_el:
-              price_level_el.string = ticket_data.get('price_level', 'deutschlandweit')
-          
-          # Обновляем время последнего обновления
-          last_updated = soup.find(id='lastUpdatedTime')
-          if last_updated:
-              last_updated.string = ticket_data['last_updated']
-          
-          # Сохраняем обновленный HTML
-          with open('index.html', 'w') as f:
-              f.write(str(soup))
-          
-          print("index.html обновлен с данными билета.")
-        shell: python
+# Обновляем время последнего обновления
+last_updated = soup.find(id='lastUpdatedTime')
+if last_updated:
+    last_updated.string = ticket_data['last_updated']
 
-      - name: Проверить изменения в файлах
-        id: check_changes
-        run: |
-          git status --porcelain
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "CHANGES_DETECTED=true" >> $GITHUB_OUTPUT
-          else
-            echo "CHANGES_DETECTED=false" >> $GITHUB_OUTPUT
-          fi
+# Сохраняем обновленный HTML
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(str(soup))
 
-      - name: Сохранить и запушить изменения
-        if: steps.check_changes.outputs.CHANGES_DETECTED == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Автообновление: QR-код и данные билета $(date '+%d.%m.%Y %H:%M')"
-          branch: main
-          file_pattern: |
-            qr-code.png
-            ticket_data.json
-            index.html
-          commit_options: '--no-verify'
-          push_options: '--no-verify'
+print('index.html успешно обновлен с данными билета.')
+    "
