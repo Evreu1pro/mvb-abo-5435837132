@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-ticket-
+  update-ticket-data:
     runs-on: ubuntu-latest
     permissions:
       contents: write
