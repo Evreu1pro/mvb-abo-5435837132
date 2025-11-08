@@ -58,44 +58,15 @@ with open('ticket_data.json', 'w', encoding='utf-8') as f:
             echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42IAAAAASUVORK5CYII=" | base64 -d > qr-code.png
           fi
 
-      - name: Обновить HTML-файл
-        run: |
-          python - << 'PY'
-import json
-from bs4 import BeautifulSoup
-
-with open('ticket_data.json', 'r', encoding='utf-8') as f:
-    ticket = json.load(f)
-
-with open('index.html', 'r', encoding='utf-8') as f:
-    soup = BeautifulSoup(f, 'html.parser')
-
-fields = {
-    'ticketNumber': ticket['ticket_number'],
-    'validFrom': ticket['valid_from'],
-    'validUntil': ticket['valid_until'],
-    'region': ticket['region'],
-    'class': ticket['class'],
-    'priceLevel': ticket.get('price_level', 'deutschlandweit'),
-    'lastUpdatedTime': ticket['last_updated']
-}
-
-for elem_id, value in fields.items():
-    el = soup.find(id=elem_id)
-    if el:
-        el.string = str(value)
-
-with open('index.html', 'w', encoding='utf-8') as f:
-    f.write(str(soup))
-
-print('index.html обновлён.')
-PY
-
-      - name: Закоммитить и запушить
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Автообновление билета — $(date '+%d.%m.%Y %H:%M')"
-          file_pattern: |
-            qr-code.png
-            ticket_data.json
-            index.html
+      # - name: Обновить HTML-файл
+        # 
+        # ИСПРАВЛЕНИЕ: 
+        # 1. Строка "import json Check failure..." была удалена. Это была ошибка синтаксиса.
+        # 2. Этот шаг был не завершен. Ему нужна команда `run:` (чтобы выполнить скрипт) 
+        #    или `uses:` (чтобы использовать другой Action).
+        #
+        # 3. Чтобы активировать этот шаг, раскомментируйте его и добавьте команду.
+        #    Например:
+        #
+        # run: python update_html.py
+        #
