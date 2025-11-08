@@ -1,13 +1,57 @@
-- name: Обновить номер билета в index.html
-  run: |
-    # Проверяем существование файла ticket_data.json
-    if [ ! -f "ticket_data.json" ]; then
-      echo "Файл ticket_data.json не существует. Создаем резервные данные."
-      python -c "
+# .github/workflows/update-qr-ticket.yml
+name: Обновить QR-код и данные билета
+
+on:
+  # 🕒 Автоматический запуск: ежедневно в 5:00 и 17:00 по Германии (CET/CEST)
+  schedule:
+    - cron: '0 4,16 * * *'   # 5:00 и 17:00 CET зимой → 4:00/16:00 UTC
+    - cron: '0 3,15 * * *'   # 5:00 и 17:00 CEST летом → 3:00/15:00 UTC
+
+  # 🖱️ Ручной запуск через GitHub UI
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Причина обновления'
+        required: false
+        default: 'Ручной запуск'
+
+jobs:
+  update-ticket-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # 1️⃣ Клонируем репозиторий
+      - name: 📥 Клонировать репозиторий
+        uses: actions/checkout@v4
+
+      # 2️⃣ Настраиваем Python
+      - name: 🐍 Установить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3️⃣ Устанавливаем зависимости
+      - name: 📦 Установить зависимости
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      # 4️⃣ Запускаем скрипт обновления
+      - name: 🔄 Запустить обновление билета
+        run: python update_ticket.py
+
+      # 5️⃣ Проверяем, что файлы существуют (создаем резерв, если нет)
+      - name: 🔍 Убедиться, что ticket_data.json существует
+        run: |
+          if [ ! -f "ticket_data.json" ]; then
+            echo "⚠️ ticket_data.json не найден. Создаём резервный файл."
+            python -c "
 import json
 from datetime import datetime
-backup_data = {
-    'ticket_number': 'BACKUP-987654',
+data = {
+    'ticket_number': 'BACKUP-000000',
     'valid_from': '01.11.2025 - 00:00',
     'valid_until': '01.12.2025 - 03:00',
     'region': 'Deutschlandweit',
@@ -15,54 +59,66 @@ backup_data = {
     'price_level': 'deutschlandweit',
     'last_updated': datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 }
-with open('ticket_data.json', 'w') as f:
-    json.dump(backup_data, f, ensure_ascii=False, indent=2)
-      "
-    fi
-    
-    # Обновляем HTML
-    python -c "
+with open('ticket_data.json', 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+            "
+          fi
+
+      - name: 🖼️ Убедиться, что qr-code.png существует
+        run: |
+          if [ ! -f "qr-code.png" ]; then
+            echo "⚠️ qr-code.png не найден. Создаём placeholder."
+            # Простой 1x1 прозрачный PNG в base64 → декодируем
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42IAAAAASUVORK5CYII=" | base64 -d > qr-code.png
+          fi
+
+      # 6️⃣ Обновляем index.html данными из ticket_data.json
+      - name: 📄 Обновить index.html
+        run: |
+          python -c "
 import json
 from bs4 import BeautifulSoup
 
-# Читаем данные билета
-with open('ticket_data.json', 'r') as f:
-    ticket_data = json.load(f)
+# Загружаем данные билета
+with open('ticket_data.json', 'r', encoding='utf-8') as f:
+    ticket = json.load(f)
 
-# Читаем содержимое index.html
+# Читаем HTML
 with open('index.html', 'r', encoding='utf-8') as f:
-    html_content = f.read()
+    soup = BeautifulSoup(f, 'html.parser')
 
-# Обновляем данные в HTML
-soup = BeautifulSoup(html_content, 'html.parser')
-
-# Обновляем номер билета
-ticket_number_el = soup.find(id='ticketNumber')
-if ticket_number_el:
-    ticket_number_el.string = ticket_data['ticket_number']
-
-# Обновляем остальные данные
-elements = {
-    'validFrom': 'valid_from',
-    'validUntil': 'valid_until',
-    'region': 'region',
-    'class': 'class',
-    'priceLevel': 'price_level'
+# Обновляем элементы по ID
+mapping = {
+    'ticketNumber': ticket['ticket_number'],
+    'validFrom': ticket['valid_from'],
+    'validUntil': ticket['valid_until'],
+    'region': ticket['region'],
+    'class': ticket['class'],
+    'priceLevel': ticket.get('price_level', 'deutschlandweit'),
+    'lastUpdatedTime': ticket['last_updated']
 }
 
-for html_id, data_key in elements.items():
-    el = soup.find(id=html_id)
-    if el and data_key in ticket_data:
-        el.string = ticket_data[data_key]
+for elem_id, value in mapping.items():
+    el = soup.find(id=elem_id)
+    if el:
+        el.string = str(value)
 
-# Обновляем время последнего обновления
-last_updated = soup.find(id='lastUpdatedTime')
-if last_updated:
-    last_updated.string = ticket_data['last_updated']
-
-# Сохраняем обновленный HTML
+# Записываем обновлённый HTML
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(str(soup))
 
-print('index.html успешно обновлен с данными билета.')
-    "
+print('✅ index.html успешно обновлён.')
+          "
+
+      # 7️⃣ Фиксируем изменения в Git
+      - name: 💾 Сохранить и запушить изменения
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Автообновление билета: $(date '+%d.%m.%Y %H:%M CET')"
+          file_pattern: |
+            qr-code.png
+            ticket_data.json
+            index.html
+          push_options: '--no-verify'
+          skip_dirty_check: false
+          skip_fetch: true
