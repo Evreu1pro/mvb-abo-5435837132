@@ -2,12 +2,9 @@
 name: Обновить QR-код и данные билета
 
 on:
-  # 🕒 Автоматический запуск два раза в день (по Германии: 5:00 и 17:00)
   schedule:
-    - cron: '0 3,15 * * *'   # Летом: 5:00 и 17:00 CEST = 3:00 и 15:00 UTC
-    - cron: '0 4,16 * * *'   # Зимой: 5:00 и 17:00 CET = 4:00 и 16:00 UTC
-
-  # 🖱️ Возможность запустить вручную через GitHub
+    - cron: '0 3,15 * * *'
+    - cron: '0 4,16 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,31 +14,26 @@ jobs:
       contents: write
 
     steps:
-      # 1. Клонируем репозиторий
-      - name: 📥 Клонировать репозиторий
+      - name: Клонировать репозиторий
         uses: actions/checkout@v4
 
-      # 2. Устанавливаем Python
-      - name: 🐍 Настроить Python
+      - name: Настроить Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. Устанавливаем зависимости
-      - name: 📦 Установить библиотеки
+      - name: Установить зависимости
         run: |
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
-      # 4. Запускаем скрипт обновления билета
-      - name: 🔄 Обновить данные билета
+      - name: Обновить данные билета
         run: python update_ticket.py
 
-      # 5. Гарантируем наличие ticket_data.json (на случай ошибки)
-      - name: 🛡️ Убедиться, что ticket_data.json существует
+      - name: Убедиться, что ticket_data.json существует
         run: |
           if [ ! -f "ticket_data.json" ]; then
-            echo "⚠️ Файл ticket_data.json не найден. Создаём резервный."
+            echo "Файл ticket_data.json не найден. Создаём резервный."
             python -c "
 import json
 from datetime import datetime
@@ -59,16 +51,14 @@ with open('ticket_data.json', 'w', encoding='utf-8') as f:
             "
           fi
 
-      # 6. Гарантируем наличие QR-кода
-      - name: 🖼️ Убедиться, что qr-code.png существует
+      - name: Убедиться, что qr-code.png существует
         run: |
           if [ ! -f "qr-code.png" ]; then
-            echo "⚠️ QR-код отсутствует. Создаём placeholder."
+            echo "QR-код отсутствует. Создаём placeholder."
             echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42IAAAAASUVORK5CYII=" | base64 -d > qr-code.png
           fi
 
-      # 7. Обновляем index.html данными из JSON
-      - name: 📄 Обновить HTML-файл
+      - name: Обновить HTML-файл
         run: |
           python -c "
 import json
@@ -98,11 +88,10 @@ for elem_id, value in fields.items():
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(str(soup))
 
-print('✅ index.html обновлён.')
+print('index.html обновлён.')
           "
 
-      # 8. Сохраняем изменения в Git
-      - name: 💾 Закоммитить и запушить
+      - name: Закоммитить и запушить
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Автообновление билета — $(date '+%d.%m.%Y %H:%M')"
