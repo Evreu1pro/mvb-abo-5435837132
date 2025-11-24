@@ -714,9 +714,36 @@ stripInner.appendChild(transportItem);
 }
 
 // --- FUNCTIONS TO CONTROL OVERLAYS ---
+// --- ФУНКЦИЯ УПРАВЛЕНИЯ ЯРКОСТЬЮ (МОСТ К ANDROID) ---
+function setAppBrightness(maximize) {
+    // Проверяем, запущены ли мы внутри Android приложения
+    if (typeof AndroidInterface !== "undefined") {
+        AndroidInterface.setBrightness(maximize);
+    } else {
+        console.log("Не в приложении: яркость не изменена");
+    }
+}
+function closeSuperZoom() {
+    document.getElementById('qrSuperZoom').classList.add('hidden');
+    document.getElementById('qrFull').classList.remove('hidden');
+    // Яркость оставляем высокой, так как мы вернулись к обычному QR
+}
+// --- FUNCTIONS TO CONTROL OVERLAYS ---
 function toggleQR() {
-const qrElement = document.getElementById('qrFull');
-qrElement.classList.toggle('hidden');
+    const qrElement = document.getElementById('qrFull');
+    const isHidden = qrElement.classList.toggle('hidden');
+    
+    document.body.style.overflow = isHidden ? '' : 'hidden';
+    
+    if (!isHidden) {
+        // Если QR открыт -> Врубаем яркость
+        updateFullscreenTime();
+        setAppBrightness(true); 
+    } else {
+        // Если QR закрыт -> Возвращаем обычную яркость
+        setAppBrightness(false);
+    }
+}
 document.body.style.overflow = qrElement.classList.contains('hidden') ? '' : 'hidden';
 if (!qrElement.classList.contains('hidden')) {
 updateFullscreenTime();
@@ -821,3 +848,4 @@ long: openSuperZoom // Function for long press
 
 </body>
 </html>
+
